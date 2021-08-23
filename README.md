@@ -2,7 +2,7 @@
 
 ## Build
 ```shell
-git clone 
+git clone git@github.com:Manta-Network/measure-block-time.git
 cd measure-block-time
 yarn
 ```
