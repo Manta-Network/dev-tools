@@ -48,9 +48,9 @@ async function main() {
     } else if (status.isFinalized) {
       console.log('Finalized block hash', status.asFinalized.toHex());
     }
+
+    process.exit();
   });
-  
-  this.exit()
 }
 
 main().catch(console.error);
