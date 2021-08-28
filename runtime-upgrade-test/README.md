@@ -10,7 +10,7 @@ yarn
 ## Configure
 Change this line of code, point to the running node.
 ```
-const nodeAddress = 'ws://127.0.0.1:9801';
+const nodeAddress = 'ws://127.0.0.1:9921';
 ```
 You will need to copy a `root_mnemonics` file, which includes the mnemonics phrase for the sudo account that will send the TX.
 Moreover you will need to copy a `calamari.wasm` file to be sent as a payload of the TX.

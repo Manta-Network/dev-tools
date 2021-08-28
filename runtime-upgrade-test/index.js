@@ -13,7 +13,7 @@ async function createPromiseApi(nodeAddress) {
 }
 
 async function main() {
-    const nodeAddress = 'ws://127.0.0.1:9801';
+    const nodeAddress = 'ws://127.0.0.1:9921';
     const api = await createPromiseApi(nodeAddress);
 
     // Retrieve the upgrade key from the chain state
