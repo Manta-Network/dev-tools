@@ -21,9 +21,9 @@ async function main() {
 
     // Some mnemonic phrase
     const PHRASE = fs.readFileSync('root_mnemonics').toString();
-    console.log(PHRASE);
+
     // Add an account, straight mnemonic
-    const newPair = keyring.addFromUri('//Alice', { name: 'Alice default' });
+    const newPair = keyring.addFromUri(PHRASE, { name: 'Root' });
 
     // Retrieve the runtime to upgrade
     const code = fs.readFileSync('calamari.wasm').toString('hex');
@@ -45,7 +45,7 @@ async function main() {
       console.log('Events:');
 
       console.log(JSON.stringify(events, null, 2));
-      //events.toHuman();
+      events.toHuman();
     } else if (status.isFinalized) {
       console.log('Finalized block hash', status.asFinalized.toHex());
     }
