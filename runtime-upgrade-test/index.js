@@ -21,7 +21,8 @@ async function main() {
 
     // Some mnemonic phrase
     const PHRASE = fs.readFileSync('root_mnemonics').toString();
-
+    console.log(PHRASE);
+    
     // Add an account, straight mnemonic
     const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
 
