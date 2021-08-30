@@ -20,7 +20,7 @@ async function main() {
     const adminId = await api.query.sudo.key();
 
     // Some mnemonic phrase
-    const PHRASE = fs.readFileSync('root_mnemonics').toString();
+    const PHRASE = fs.readFileSync('root_mnemonics').toString().trimEnd();
 
     // Add an account, straight mnemonic
     const newPair = keyring.addFromUri(PHRASE);
