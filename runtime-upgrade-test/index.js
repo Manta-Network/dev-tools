@@ -20,12 +20,12 @@ async function main() {
     const adminId = await api.query.sudo.key();
 
     // Some mnemonic phrase
-    const PHRASE = fs.readFileSync('root_mnemonics').toString();
+    const PHRASE = fs.readFileSync('root_mnemonics').toString().trimEnd();
     console.log(PHRASE);
 
     // Add an account, straight mnemonic
     //const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
-    const newPair = keyring.addFromMnemonic(PHRASE.trimEnd());
+    const newPair = keyring.addFromMnemonic(PHRASE);
 
     console.log(PHRASE != 'midnight supply never you faith veteran danger purity tired illness dune token')
 
