@@ -23,7 +23,7 @@ async function main() {
     const PHRASE = fs.readFileSync('root_mnemonics').toString();
 
     // Add an account, straight mnemonic
-    const newPair = keyring.addFromUri('midnight supply never you faith veteran danger purity tired illness dune token');
+    const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
 
     // Retrieve the runtime to upgrade
     const code = fs.readFileSync('calamari.wasm').toString('hex');
