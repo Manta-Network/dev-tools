@@ -20,10 +20,10 @@ async function main() {
     const adminId = await api.query.sudo.key();
 
     // Some mnemonic phrase
-    const PHRASE = fs.readFileSync('midnight supply never you faith veteran danger purity tired illness dune token').toString();
+    const PHRASE = fs.readFileSync('root_mnemonics').toString();
 
     // Add an account, straight mnemonic
-    const newPair = keyring.addFromUri(PHRASE);
+    const newPair = keyring.addFromUri('midnight supply never you faith veteran danger purity tired illness dune token');
 
     // Retrieve the runtime to upgrade
     const code = fs.readFileSync('calamari.wasm').toString('hex');
