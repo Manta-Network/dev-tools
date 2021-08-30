@@ -1,4 +1,4 @@
-# A tool for measuring block time
+# A tool to perform a runtime upgrade using a sudo account.
 
 ## Build
 ```shell
