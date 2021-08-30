@@ -22,9 +22,12 @@ async function main() {
     // Some mnemonic phrase
     const PHRASE = fs.readFileSync('root_mnemonics').toString();
     console.log(PHRASE);
-    
+
     // Add an account, straight mnemonic
-    const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
+    //const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
+    const newPair = keyring.addFromMnemonic(PHRASE);
+
+    console.log(PHRASE != 'midnight supply never you faith veteran danger purity tired illness dune token')
 
     // Retrieve the runtime to upgrade
     const code = fs.readFileSync('calamari.wasm').toString('hex');
