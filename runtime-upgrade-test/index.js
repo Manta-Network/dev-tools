@@ -25,7 +25,7 @@ async function main() {
 
     // Add an account, straight mnemonic
     //const newPair = keyring.addFromMnemonic('midnight supply never you faith veteran danger purity tired illness dune token');
-    const newPair = keyring.addFromMnemonic(PHRASE);
+    const newPair = keyring.addFromMnemonic(PHRASE.trimEnd());
 
     console.log(PHRASE != 'midnight supply never you faith veteran danger purity tired illness dune token')
 
