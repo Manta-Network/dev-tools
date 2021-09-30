@@ -2,3 +2,10 @@
 endpoint = 'ws://127.0.0.1:9944'
 batch_size = 2
 signer = '//Alice'
+
+[vesting]
+signer = "//Alice"
+locked = 10000
+per_block = 10
+starting_block = 100
+target = "5GKKAvzxAd8ou3KU3qoCGvVUKR7oPmJVK16Babr5yg2iQ3VM"
