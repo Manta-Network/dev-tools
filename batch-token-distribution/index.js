@@ -1,9 +1,9 @@
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const { Keyring, decodeAddress, encodeAddress } = require('@polkadot/keyring');
-const { hexToU8a, isHex } = require('@polkadot/util');
-const { levels } = require('logform');
+const { hexToU8a, isHex, BN } = require('@polkadot/util');
+const fs = require('fs/promises');
+const toml = require('toml');
 const winston = require('winston');
-const BigNumber = require('bignumber.js');
 const jsonFile = require('./token-distribution-list.json');
 
 const logger = winston.createLogger({
@@ -23,28 +23,31 @@ const logger = winston.createLogger({
 // Create a promise API instance of the passed in node address.
 async function createPromiseApi(nodeAddress) {
     const wsProvider = new WsProvider(nodeAddress);
-    const api = await new ApiPromise({ provider: wsProvider });
-    await api.isReady;
-    return api;
+    try {
+        const api = await new ApiPromise({ provider: wsProvider });
+        await api.isReady;
+        return api;
+    } catch (error) {
+        let message = "Failed to create client due to: " + error;
+        add_logger('error', message);
+    }
 }
 
 // Create batch calls
 function createBatchCalls(api, batch=[]) {
     let txs = []
     for (const reward of batch) {
-        console.log(reward);
         let address = reward['address'];
         if (isValidAddress(address)) {
-            let sum = reward['rewards'] + reward['referrals_rewards'];
-            // let big_num_sum = new BigNumber(sum);
-            // let r = new BigNumber(10);
-            // let tx = api.tx.balances.transfer(address, big_num_sum * r.pow(12));
-            console.log(typeof sum);
-            let tx = api.tx.balances.transfer(address, 100);
+            let to_issue = reward['total_reward'];
+            let decimal = api.registry.chainDecimals;
+            const factor = new BN(10).pow(new BN(decimal));
+            const amount = new BN(to_issue).mul(factor);
+            let tx = api.tx.balances.transfer(address, amount);
             txs.push(tx);
             logger.log({
                 level: 'info',
-                message: address + " is going to receive " + sum + "KMA."
+                message: address + " is going to receive " + to_issue + " KMA."
             });
         } else {
             logger.log({
@@ -67,41 +70,80 @@ function isValidAddress(address) {
     }
 }
 
-async function verifyBatchCalls(api) {
+async function parseBatchCallEvent(event) {
 
 }
 
+function add_logger(level, message) {
+    logger.log({
+        level,
+        message
+    });
+}
+
+async function checkAccountInfoAfterIssue(api, who, target) {
+    let { data: { free: previousFree } } = await api.query.system.account(who);
+    return target == previousFree;
+}
+
+async function readProjectConfiguration(configPath) {
+    const content = await fs.readFile(configPath, { encoding: 'utf-8' })
+    const config = toml.parse(content)
+    return config;
+}
+
 async function main() {
-    // let path = "token-distribution-list.json";
-    // let data = readTokenList(path);
     console.log("Data: ", jsonFile[0]['address']);
     console.log("Data: ", jsonFile[10]['rewards'] + jsonFile[10]['referrals_rewards']);
     let valid = 'FiUWDC3eUDp5JevJHPTvP8uMAp4oRb6m8iFjxDRC5e3Cegr';
     let invalid = 'FiUWDC3eUDp5JevJHPTvP8uMAp4oRb6m8iFjxDRC5e3Ceg';
     console.log(isValidAddress(valid));
     console.log(isValidAddress(invalid));
-    // const nodeAddress = 'wss://rpc.polkadot.io';
-    const nodeAddress = 'ws://127.0.0.1:9944';
+
+    let configPath = "configuration.toml";
+    let config = await readProjectConfiguration(configPath);
+
+    const nodeAddress = config['node']['endpoint'];
     const api = await createPromiseApi(nodeAddress);
 
-    let seed = '//Alice';
+    let seed = config['node']['signer'];
     const keyring = new Keyring({ type: 'sr25519' });
     const sender = keyring.addFromUri(seed);
 
-    const txs = createBatchCalls(api, jsonFile);
+    let lengthJson = jsonFile.length;
+    let batchSize = config['node']['batch_size'];
+    let times = parseInt(lengthJson / batchSize);
+    for (var i = 0; i <= times; ++i) {
+        let start = i * batchSize;
+        let end = i * batchSize + batchSize;
+        if (end > lengthJson) {
+            end = lengthJson;
+        }
+        let currentBatch = jsonFile.slice(start, end);
 
-    api.tx.utility
-        .batch(txs)
-        .signAndSend(sender, ({ status }) => {
+        const txs = createBatchCalls(api, currentBatch);
+        const nonce = await api.rpc.system.accountNextIndex(sender.address);
+        console.log("nonce: ", nonce);
+        api.tx.utility.batch(txs).signAndSend(sender, { nonce: nonce + 1 }, ({ events = [], status }) => {
+            console.log('Transaction status:', status.type);
+
             if (status.isInBlock) {
-                // if (status.isInBlock || status.isFinalized) {
+                console.log('Included at block hash', status.asInBlock.toHex());
+                console.log('Events:');
+                events.forEach(({ event: { data, method, section }, phase }) => {
+                    console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
+                });
                 console.log(`included in ${status.asInBlock}`);
                 logger.log({
                     level: 'info',
                     message: `included in ${status.asInBlock}`
                 });
+            } else if (status.isFinalized) {
+                console.log('Finalized block hash', status.asFinalized.toHex());
+                process.exit(0);
             }
         });
+    }
 }
 
 main().catch(console.error);

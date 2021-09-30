@@ -10,12 +10,14 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@polkadot/api": "^6.1.1",
+    "@polkadot/api": "^6.1.2",
+    "@polkadot/api-derive": "^6.1.2",
     "@polkadot/keyring": "^7.4.1",
-    "@polkadot/types": "^6.1.1",
+    "@polkadot/types": "^6.1.2",
     "@polkadot/util": "^7.4.1",
     "@polkadot/util-crypto": "^7.4.1",
-    "bignumber.js": "^9.0.1",
+    "csvtojson": "^2.0.10",
+    "toml": "^3.0.0",
     "winston": "^3.3.3"
   }
 }

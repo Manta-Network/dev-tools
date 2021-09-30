@@ -1,79 +1,289 @@
 [
     {
-        "address": "E5RTY1Wu78N9hkJSpzdz3NcSW135TVLgdkTAS7bDVib2aHe",
-        "contributed": 5,
-        "rewards": 50000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "HQx8aUmsisosAS9C5aSiRNFCsjJjt2AmR63nXmBWQZsBPPD",
+        "base_reward": "10000",
+        "early_reward": "1000",
+        "referral_reward": "0",
+        "total_reward": "11000"
     },
     {
-        "address": "DVtQCP4Pc1BE1yUxbSW66THafnwk62XDu4k9zLzbCQis5jV",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "FRcPbq2E3azyLR3JcUhfNbgakmhiostf61BjgH9UYD6HVfU",
+        "base_reward": "95000",
+        "early_reward": "9500",
+        "referral_reward": "2561987.5",
+        "total_reward": "2666487.5"
     },
     {
-        "address": "EkPJtAZW9m3dM3EUqTb6wUhHXWBRXt3g294KPYAbB4DYsnC",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "DyvMuCMLP2j1gWTLZwFiqGBTthWV3vYvYhPQMLPzWumJ8Wy",
+        "base_reward": "20000",
+        "early_reward": "2000",
+        "referral_reward": "0",
+        "total_reward": "22000"
     },
     {
-        "address": "DwGqDW8yA951xT4gtLKDCfWo1gUv6PqdjDybCx6QRJFUorf",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "DTLvpWpCAG2Ja8UWwr5WeHe2xw5wZTixx8AVd7QF3b7juxE",
+        "base_reward": "10000",
+        "early_reward": "1000",
+        "referral_reward": "0",
+        "total_reward": "11000"
     },
     {
-        "address": "FZuvUqhN3BSnGQwQbiX2aSkSp6aykvfsFzyCsiGYEVNqxPa",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "EXvk92X4EYvPfWJy9t8f8pqK6Gg3m2UM2ig9aECyN5eqGh6",
+        "base_reward": "11000",
+        "early_reward": "1100",
+        "referral_reward": "0",
+        "total_reward": "12100"
     },
     {
-        "address": "FaXi8k4mLkj5NEVLQbvoE81pXC8smUqMfjaYJR8FXKWBXJ9",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "GKt84rBxdnvXr4iuzwr66NAr1Ur2iv5m4y9R85SejKgkjPQ",
+        "base_reward": "11000",
+        "early_reward": "1100",
+        "referral_reward": "0",
+        "total_reward": "12100"
     },
     {
-        "address": "GjjYubo9MRAvQ9fva6JvepT8tczH1hhVezDw9H9kTeT1Fmm",
-        "contributed": 0.6,
-        "rewards": 6000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "FhcWcXi2SyJgSb66KdAkyqqrw3uoJVEUGt6APguiBA1rcNG",
+        "base_reward": "15000000",
+        "early_reward": "1500000",
+        "referral_reward": "0",
+        "total_reward": "16500000"
     },
     {
-        "address": "GjjYubo9MRAvQ9fva6JvepT8tczH1hhVezDw9H9kTeT1Fmm",
-        "contributed": 0.1,
-        "rewards": 1000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "FX9ToFknM9Nx1CxtgSagCKcEe69W7PBbDBVs6KKwrNsC1a5",
+        "base_reward": "22000",
+        "early_reward": "2200",
+        "referral_reward": "550",
+        "total_reward": "24750"
     },
     {
-        "address": "Cs1XsUzDu2W4wC2y9cwkpwx2yrCVh5AcyUBzw64EZHxteU8",
-        "contributed": 0.5,
-        "rewards": 5000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "DmSqxVuzRvQriitckWY8wciUtcnvLVqQn6DrgpVBgpf8sZU",
+        "base_reward": "49500",
+        "early_reward": "4950",
+        "referral_reward": "0",
+        "total_reward": "54450"
     },
     {
-        "address": "FiUWDC3eUDp5JevJHPTvP8uMAp4oRb6m8iFjxDRC5e3Cegr",
-        "contributed": 1,
-        "rewards": 10000,
-        "referrals": 0,
-        "referrals_rewards": 0
+        "address": "E2TedckwZd2YVZFUBJoXuQmZGkCg8GufesGEyPHKVUexKXz",
+        "base_reward": "19900",
+        "early_reward": "1990",
+        "referral_reward": "33497.5",
+        "total_reward": "55387.5"
+    },
+    {
+        "address": "DmjMGFkPgUpqx4rqsRJgFD4xQteH9ZwZC1qeBsqhBWoL1tj",
+        "base_reward": "50000",
+        "early_reward": "5000",
+        "referral_reward": "0",
+        "total_reward": "55000"
+    },
+    {
+        "address": "DMF8a34emwapz9mV5P5PTDcghh1ZR3miH9ad9mHzfAUMSXU",
+        "base_reward": "30000000",
+        "early_reward": "3000000",
+        "referral_reward": "0",
+        "total_reward": "33000000"
+    },
+    {
+        "address": "D87qL69pxE82WkL4oMNYUw4GZ8DTLZgMZn3ot2MSBud6tX2",
+        "base_reward": "11000",
+        "early_reward": "1100",
+        "referral_reward": "250",
+        "total_reward": "12350"
+    },
+    {
+        "address": "Gc5tALGD6UhPSN4BAgR9VLLKqoUuqismECmZpCPhbtAbe6b",
+        "base_reward": "3000",
+        "early_reward": "300",
+        "referral_reward": "0",
+        "total_reward": "3300"
+    },
+    {
+        "address": "GZK4THbstJspW1Mz4LqvgzBZz1fQ4GG8KtpCvVitiTJh3LL",
+        "base_reward": "30000",
+        "early_reward": "3000",
+        "referral_reward": "0",
+        "total_reward": "33000"
+    },
+    {
+        "address": "DMLgHWqdEPRGekJip32qW3JJ1W7KtM35hmZE7pxBxPzuyrY",
+        "base_reward": "11000",
+        "early_reward": "1100",
+        "referral_reward": "275",
+        "total_reward": "12375"
+    },
+    {
+        "address": "FHfhNtETthZ4ymdwmSSwgereAW1o3yikxASesTvKBTaUKcT",
+        "base_reward": "10000",
+        "early_reward": "1000",
+        "referral_reward": "0",
+        "total_reward": "11000"
+    },
+    {
+        "address": "CgcpKgZiTbu6n9cgJjjt7KNRKDZQ8qLaNV9RvuiK4UcAZLv",
+        "base_reward": "100000",
+        "early_reward": "10000",
+        "referral_reward": "0",
+        "total_reward": "110000"
+    },
+    {
+        "address": "FerNvRr2trhehc6TL34SRrqeLKP4G6S5RMivPhbcWoeujVs",
+        "base_reward": "50000",
+        "early_reward": "5000",
+        "referral_reward": "0",
+        "total_reward": "55000"
+    },
+    {
+        "address": "GJPooFt8kgQbMiuEXbSoFnMS1Vam7MShUAqU6YK7Js1nmJe",
+        "base_reward": "200000",
+        "early_reward": "20000",
+        "referral_reward": "0",
+        "total_reward": "220000"
+    },
+    {
+        "address": "DgFydYwcE2tneQ9U8gabTb1f2Hp4zvtAtFskssM2ZuzDJ8K",
+        "base_reward": "10000",
+        "early_reward": "1000",
+        "referral_reward": "305",
+        "total_reward": "11305"
     },
     {
         "address": "DfrM7A2WWtXjWpcUfcofxqPZCA3nZ7LMcTx3DfSC88tH4ex",
-        "contributed": 4,
-        "rewards": 44000,
-        "referrals": 11,
-        "referrals_rewards": 53402
+        "base_reward": "170000",
+        "early_reward": "17000",
+        "referral_reward": "57652.0790325",
+        "total_reward": "244652.0790325"
+    },
+    {
+        "address": "CidfDfKdfHm3U3DfuVt29TMEFk5qJ4xHg7ZGcwkGdJAnveF",
+        "base_reward": "10000",
+        "early_reward": "1000",
+        "referral_reward": "0",
+        "total_reward": "11000"
+    },
+    {
+        "address": "FXQC7AuBSbB4RsSjpLX4u2uudaid3D9Rpa1xryT4nC8PteJ",
+        "base_reward": "23000",
+        "early_reward": "2300",
+        "referral_reward": "9062.25",
+        "total_reward": "34362.25"
+    },
+    {
+        "address": "GLufkuGg8z53hPMEspckHdwUZ8BE9SeArPvCTv1hrtECatF",
+        "base_reward": "30000",
+        "early_reward": "3000",
+        "referral_reward": "0",
+        "total_reward": "33000"
+    },
+    {
+        "address": "HESJxXt37tdpKW4GRVFk9TEwm2ksDVfBRXzZb4u9wF83hTM",
+        "base_reward": "50500",
+        "early_reward": "5050",
+        "referral_reward": "1262.5",
+        "total_reward": "56812.5"
+    },
+    {
+        "address": "DBBNKXbX2TBRFLsswVuiUg9HUbqBRykx2SHeLB8hb2XfNny",
+        "base_reward": "6000",
+        "early_reward": "600",
+        "referral_reward": "0",
+        "total_reward": "6600"
+    },
+    {
+        "address": "HHGiqVpLGZdq2QaRBkW8LhFBfvF9UejmNwAinuR6uH5EVMQ",
+        "base_reward": "66977.775",
+        "early_reward": "6697.7775",
+        "referral_reward": "4438.944375",
+        "total_reward": "78114.496875"
+    },
+    {
+        "address": "EGF6WdLkrffxwnvJ7RjDWQQNA1X8hqz4YLGht9DMPvNsV9V",
+        "base_reward": "15000",
+        "early_reward": "1500",
+        "referral_reward": "0",
+        "total_reward": "16500"
+    },
+    {
+        "address": "DuHn1RTK6r64H5EPCt3V8kBm4FbkypzjEcyCosVjesFbDzN",
+        "base_reward": "130000",
+        "early_reward": "13000",
+        "referral_reward": "3250",
+        "total_reward": "146250"
+    },
+    {
+        "address": "G1pTc6DB665QByXRNojGdKPrPsSSDuLMn4CnpBb6UrJAhcz",
+        "base_reward": "26667",
+        "early_reward": "2666.7",
+        "referral_reward": "666.675",
+        "total_reward": "30000.375"
+    },
+    {
+        "address": "HTfSNQuiqyrNxSrgNchtWztwug1EP3Mq9C6ddTRkBAnVZYR",
+        "base_reward": "100000",
+        "early_reward": "10000",
+        "referral_reward": "17400",
+        "total_reward": "127400"
+    },
+    {
+        "address": "FegWWJq7AWgkYguRAd796uvNVYburnURpBz7wZ9kf5EoyZ5",
+        "base_reward": "50000",
+        "early_reward": "5000",
+        "referral_reward": "0",
+        "total_reward": "55000"
+    },
+    {
+        "address": "GZPGzmyMvq6RdjU7X8YWJg8Wr82rYbQ6Y2fHaiNema3g6b2",
+        "base_reward": "41000",
+        "early_reward": "4100",
+        "referral_reward": "1275",
+        "total_reward": "46375"
+    },
+    {
+        "address": "FM8cqMcCbhG8yEDzHAQm48CqEwtmPH4SzvuTmL8vC1ij1eN",
+        "base_reward": "299000",
+        "early_reward": "29900",
+        "referral_reward": "11607.5",
+        "total_reward": "340507.5"
+    },
+    {
+        "address": "CsMiL3fUE1Ptdh3nXqpip8GfSHsDGUUuPZcxLqGaKnqMYo2",
+        "base_reward": "1500",
+        "early_reward": "150",
+        "referral_reward": "0",
+        "total_reward": "1650"
+    },
+    {
+        "address": "GEviN3cjhdfQcTFxmdKdhaHbyX46jcmk4b3dHC4iVvZRLTK",
+        "base_reward": "13000",
+        "early_reward": "1300",
+        "referral_reward": "0",
+        "total_reward": "14300"
+    },
+    {
+        "address": "FnixeshacDNfmPtqYPrG6nGKM5e6uoZUQxgtbDZL2HT5wGH",
+        "base_reward": "11500",
+        "early_reward": "1150",
+        "referral_reward": "0",
+        "total_reward": "12650"
+    },
+    {
+        "address": "EkXSey912mTBkdbnBTtX1ciWGXSq4xemR5opTRioXkiFRuU",
+        "base_reward": "50000",
+        "early_reward": "5000",
+        "referral_reward": "186854.602925306",
+        "total_reward": "241854.602925306"
+    },
+    {
+        "address": "G5JgAXHwvSPxp4WsV2Lpo3rTvqPNWoUNEVKPV49MQY5raRG",
+        "base_reward": "35000",
+        "early_reward": "3500",
+        "referral_reward": "0",
+        "total_reward": "38500"
+    },
+    {
+        "address": "F7t2s5k2Jfiv6CkRZkxYKAfBM7utBtwvCW5CU18gPiUKvRB",
+        "base_reward": "25000",
+        "early_reward": "2500",
+        "referral_reward": "325",
+        "total_reward": "27825"
     }
 ]

@@ -1,0 +1,4 @@
+[node]
+endpoint = 'ws://127.0.0.1:9944'
+batch_size = 2
+signer = '//Alice'
