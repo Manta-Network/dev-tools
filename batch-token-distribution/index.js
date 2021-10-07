@@ -123,8 +123,8 @@ async function main() {
 
         const txs = createBatchCalls(api, currentBatch);
         const nonce = await api.rpc.system.accountNextIndex(sender.address);
-        console.log("nonce: ", nonce);
-        api.tx.utility.batch(txs).signAndSend(sender, { nonce: nonce + 1 }, ({ events = [], status }) => {
+        console.log("nonce: ", nonce.toNumber() + i);
+        api.tx.utility.batch(txs).signAndSend(sender, { nonce: nonce.toNumber() + i }, ({ events = [], status }) => {
             console.log('Transaction status:', status.type);
 
             if (status.isInBlock) {
