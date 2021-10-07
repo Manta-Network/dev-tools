@@ -11,8 +11,8 @@ async function createPromiseApi(nodeAddress) {
 }
 
 async function main() {
-    // const nodeAddress = 'wss://rpc.polkadot.io';
-    const nodeAddress = 'ws://127.0.0.1:9944';
+    const args = require('minimist')(process.argv.slice(2))
+    const nodeAddress = args['address'];
     
     const api = await createPromiseApi(nodeAddress);
 
