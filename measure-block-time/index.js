@@ -27,8 +27,7 @@ async function main() {
         const momentPrev = await api.query.timestamp.now.at(lastHeader.parentHash);
         const blockTime = momentCurrent - momentPrev;
         const block_author = await api.derive.chain.getHeader(lastHeader.hash);
-        // console.log("author: ", block_author.author.toHuman(), "#", lastBlockNum - 1, "-> #",lastBlockNum, ", block time: ", blockTime);
-        console.log("#", lastBlockNum - 1, "-> #",lastBlockNum, ", block time: ", blockTime);
+        console.log("author: ", block_author.author.toHuman(), "#", lastBlockNum - 1, "-> #",lastBlockNum, ", block time: ", blockTime);
         
         all_block_time += blockTime;
         count += 1;
