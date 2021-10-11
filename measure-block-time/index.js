@@ -11,8 +11,11 @@ async function createPromiseApi(nodeAddress) {
 }
 
 async function main() {
+    let nodeAddress = "ws://127.0.0.1:9988";
     const args = require('minimist')(process.argv.slice(2))
-    const nodeAddress = args['address'];
+    if (args.hasOwnProperty('address')) {
+        nodeAddress = args['address'];
+    }
     
     const api = await createPromiseApi(nodeAddress);
 
@@ -24,6 +27,7 @@ async function main() {
         const momentPrev = await api.query.timestamp.now.at(lastHeader.parentHash);
         const blockTime = momentCurrent - momentPrev;
         const block_author = await api.derive.chain.getHeader(lastHeader.hash);
+        // console.log("author: ", block_author.author.toHuman(), "#", lastBlockNum - 1, "-> #",lastBlockNum, ", block time: ", blockTime);
         console.log("#", lastBlockNum - 1, "-> #",lastBlockNum, ", block time: ", blockTime);
         
         all_block_time += blockTime;

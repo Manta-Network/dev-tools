@@ -7,15 +7,9 @@ cd measure-block-time
 yarn
 ```
 
-## Configure
-Change this line of code, point to the running node.
-```
-const nodeAddress = 'ws://127.0.0.1:9988';
-```
-
 ## Run
 ```shell
-node index.js
+node index.js --address=ws://127.0.0.1:9988
 ```
 It should print log like this:
 ```
