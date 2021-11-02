@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+      "target": "es2019",
+      "module": "CommonJS",
+      "paths": {
+        "kma-distribution/*": ["./src/*"],
+        "@polkadot/api/augment": ["./src/interfaces/augment-api.ts"],
+        "@polkadot/types/augment": ["./src/interfaces/augment-types.ts"],
+      },
+      "moduleResolution": "node"
+    },
+    "include": ["./src/**/*.ts"]
+}
