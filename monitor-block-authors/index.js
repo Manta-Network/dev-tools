@@ -1,14 +1,12 @@
-const { ApiPromise, WsProvider } = require('@polkadot/api');
+const { Client } = require('pg');
+const axios = require('axios');
 
-// Create a promise API instance of the passed in node address.
-async function createPromiseApi(nodeAddress) {
-    const wsProvider = new WsProvider(nodeAddress);
-    const api = await new ApiPromise({ 
-        provider: wsProvider
-    });
-    await api.isReady;
-    return api;
-}
+const client = new Client({
+user: 'block-data',
+database: 'blocks',
+password: 'pass',
+})
+client.connect()
 
 const calamari_names = {
     "dmxjZSec4Xj3xz3nBEwSHjQSnRGhvcoB4eRabkiw7pSDuv8fW": "crispy",
@@ -25,6 +23,7 @@ const calamari_nodes = [
     "dmyhGnuox8ny9R1efVsWKxNU2FevMxcPZaB66uEJqJhgC4a1W",
     "dmzbLejekGYZmfo5FoSznv5bBik7vGowuLxvzqFs2gZo2kANh"
 ];
+
 
 class SkipChecker {
     constructor(names, nodes) {
@@ -43,10 +42,11 @@ class SkipChecker {
         this.skips = skips;
     }
 
-    check(hash) {
+    check(hash, last_block) {
         const index = this.nodes.indexOf(hash);
         const last = this.last_author;
         const should_be = (last + 1) % this.nodes.length;
+        this.last_block = last_block;
 
         if (last != null && index != should_be) {
             let skipped = this.nodes[should_be];
@@ -61,21 +61,28 @@ class SkipChecker {
     }
 
     stats() {
-        console.log("Index, ID, Name, Skipped, Processed");
-        var names = this.names;
-        var skips = this.skips;
-        var counts = this.counts;
+        let array = [];
+        let skips = this.skips;
+        let counts = this.counts;
+        let names = this.names;
+        let last_block = this.last_block;
+        let created = new Date(Date.now()).toISOString();
 
-        var total_skips = 0;
-        var total_counted = 0;
-
-        this.nodes.forEach(function (node, index) {
-            total_skips += skips[node];
-            total_counted += counts[node];
-            console.log(`${index}, ${node}, ${names[node]}, ${skips[node]}, ${counts[node]}`);
+        this.nodes.forEach(function (node) {
+            let skip = skips[node];
+            let count = counts[node];
+            let total = skip + count;
+            array.push({
+                name: names[node],
+                id: node,
+                skipped: skip,
+                processed: count,
+                total: total,
+                last_block: last_block,
+                created: created,
+                })
         });
-
-        console.log(`${total_skips} skipped. ${total_counted} blocks processed.`);
+        return array;
     }
 }
 
@@ -89,32 +96,31 @@ async function main() {
     if (args.hasOwnProperty('address')) {
         nodeAddress = args['address'];
     }
-    if (args.hasOwnProperty('from')) {
-        fromBlock = parseInt(args['from'], 10);
-    } else {
-        throw new Error("--from option is required");
-    }
-    if (args.hasOwnProperty('to')) {
-        toBlock = parseInt(args['to'], 10);
-    }
-
     
-    const api = await createPromiseApi(nodeAddress);
     const checker = new SkipChecker(calamari_names, calamari_nodes);
+    const endpoint = nodeAddress + '/api/scan/blocks';
+    const query_res = await client.query("SELECT max(last_block) from blocks");
+    const last_processed_block = query_res.rows[0].max;
 
-    toBlock = toBlock || await api.derive.chain.bestNumber();
+    const res = await axios.post(endpoint, { row: 100, page: 0 });
+    console.log(`Starting from block ${last_processed_block}`);
 
-    console.log(`Checking blocks ${fromBlock} to ${toBlock}`);
+    const blocks = res.data.data.blocks;
+    for (let block of blocks.reverse()) {
+        if (block.block_num < last_processed_block) {
+            continue;
+        }
 
-    while (fromBlock < toBlock) {
-        const hash = await api.rpc.chain.getBlockHash(fromBlock);
-        const { author, _num } = await api.derive.chain.getHeader(hash);
-        let idx = checker.check(author.toHuman());
-        console.log(`#${fromBlock}: ${author} (${calamari_names[author]})  (${idx})`);
-        fromBlock += 1;
+        const author = block.validator;
+        let idx = checker.check(author, block.block_num);
+        console.log(`#${block.block_num}: ${author} (${calamari_names[author]})  (${idx})`);
     }
+    const last_block = blocks[0].block_num;
 
-    checker.stats();
+    let data = checker.stats();
+    let stringified = JSON.stringify(data);
+    let query = "with cte as (SELECT * from json_populate_recordset(NULL::blocks, '" + stringified + "')) insert into blocks select * from cte;";
+    let resp = await client.query(query);
 }
 
 main().catch(console.error);
