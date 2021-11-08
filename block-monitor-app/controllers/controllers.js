@@ -9,6 +9,18 @@ client.connect()
 
 const SELECT_QUERY = "select name,id,sum(skipped) as skipped,sum(processed) as processed,sum(total) as total,max(last_block) from blocks";
 
+const halfHour = () => {
+    let data = [];
+    return client.query(SELECT_QUERY + " WHERE created > now() - interval '30 minutes' group by name,id").then(res => {
+            for (let row of res.rows) {
+                data.push(row);
+            }
+        }).catch(err => console.error(err))
+        .then(function (result) {
+            return data;
+        });
+};
+
 const oneHour = () => {
     let data = [];
     return client.query(SELECT_QUERY + " WHERE created > now() - interval '1 hour' group by name,id").then(res => {
@@ -33,14 +45,34 @@ const sixHours = () => {
         });
 };
 
+const twelveHours = () => {
+    let data = [];
+    return client.query(SELECT_QUERY + " WHERE created > now() - interval '12 hours' group by name,id").then(res => {
+            for (let row of res.rows) {
+                data.push(row);
+            }
+        }).catch(err => console.error(err))
+        .then(function (result) {
+            return data;
+        });
+};
+
 const getData = (req, res, next) => {
     let response = {};
 
-    return oneHour().then(r => {
-        response["One Hour"] = r;
+    return halfHour().then(r => {
+        response["30 Minutes"] = r;
+    }).then(r => {
+        return oneHour().then(r => {
+            response["One Hour"] = r;
+        });
     }).then(r => {
         return sixHours().then(r => {
             response["Six Hours"] = r;
+        });
+    }).then(r => {
+        return twelveHours().then(r => {
+            response["Twelve Hours"] = r;
         });
     }).then(r => {
         return res.status(200).json({body: response});
