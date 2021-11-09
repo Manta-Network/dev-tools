@@ -13,4 +13,4 @@ async function main() {
     await client.query(CREATE).then(console.log)
 }
 
-main().catch(console.error)
+main().then(r => process.exit()).catch(console.error)

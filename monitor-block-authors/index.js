@@ -42,6 +42,11 @@ class SkipChecker {
         this.skips = skips;
     }
 
+    set_last_author(last_author) {
+        console.log(`Last author was ${last_author}`);
+        this.last_author = this.nodes.indexOf(last_author);
+    }
+
     check(hash, last_block) {
         const index = this.nodes.indexOf(hash);
         const last = this.last_author;
@@ -49,10 +54,15 @@ class SkipChecker {
         this.last_block = last_block;
 
         if (last != null && index != should_be) {
-            let skipped = this.nodes[should_be];
-            let name = this.names[skipped];
-            console.log(`Node ${skipped} (${name}) skipped a block.`);
-            this.skips[skipped] += 1;
+            var i = should_be;
+            while (i != index) {
+                let skipped = this.nodes[i];
+                let name = this.names[skipped];
+                console.log(`Node ${skipped} (${name}) skipped a block.`);
+                this.skips[skipped] += 1;
+
+                i = (i + 1) % this.nodes.length;
+            }
         }
 
         this.counts[hash] += 1;
@@ -109,6 +119,9 @@ async function main() {
     for (let block of blocks.reverse()) {
         if (block.block_num < last_processed_block) {
             continue;
+        } else if (block.block_num == last_processed_block) {
+            checker.set_last_author(block.validator);
+            continue;
         }
 
         const author = block.validator;
@@ -123,4 +136,4 @@ async function main() {
     let resp = await client.query(query);
 }
 
-main().catch(console.error);
+main().then(res => process.exit()).catch(console.error);
