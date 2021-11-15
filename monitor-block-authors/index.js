@@ -2,9 +2,10 @@ const { Client } = require('pg');
 const axios = require('axios');
 
 const client = new Client({
-user: 'block-data',
-database: 'blocks',
-password: 'pass',
+user: process.env['DB_USER'],
+database: 'postgres',
+password: process.env['DB_PASSWORD'],
+host: process.env['DB_HOST'],
 })
 client.connect()
 
@@ -97,16 +98,11 @@ class SkipChecker {
 }
 
 var last_author = null;
-async function main() {
-    let nodeAddress = "ws://127.0.0.1:9988";
+async function handler() {
+    let nodeAddress = process.env['SUBSCAN_ENDPOINT'];
     let fromBlock = null;
     let toBlock = null;
 
-    const args = require('minimist')(process.argv.slice(2))
-    if (args.hasOwnProperty('address')) {
-        nodeAddress = args['address'];
-    }
-    
     const checker = new SkipChecker(calamari_names, calamari_nodes);
     const endpoint = nodeAddress + '/api/scan/blocks';
     const query_res = await client.query("SELECT max(last_block) from blocks");
@@ -133,7 +129,7 @@ async function main() {
     let data = checker.stats();
     let stringified = JSON.stringify(data);
     let query = "with cte as (SELECT * from json_populate_recordset(NULL::blocks, '" + stringified + "')) insert into blocks select * from cte;";
-    let resp = await client.query(query);
+    return client.query(query);
 }
 
-main().then(res => process.exit()).catch(console.error);
+exports.handler = handler;

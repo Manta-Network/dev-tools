@@ -1,9 +1,10 @@
 const { Client } = require('pg');
 
 const client = new Client({
-user: 'block-data',
-database: 'blocks',
-password: 'pass',
+user: process.env['DB_USER'],
+database: 'postgres',
+password: process.env['DB_PASSWORD'],
+host: process.env['DB_HOST'],
 })
 client.connect()
 
