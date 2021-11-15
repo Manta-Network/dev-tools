@@ -6,5 +6,11 @@ CREATE TABLE IF NOT EXISTS blocks (
     total bigint,
     last_block bigint,
     created timestamp default now()
+);
+
+CREATE TABLE IF NOT EXISTS nodes (
+    name varchar,
+    id varchar,
+    index int
 )
 

@@ -6,24 +6,8 @@ user: process.env['DB_USER'],
 database: 'postgres',
 password: process.env['DB_PASSWORD'],
 host: process.env['DB_HOST'],
-})
-client.connect()
-
-const calamari_names = {
-    "dmxjZSec4Xj3xz3nBEwSHjQSnRGhvcoB4eRabkiw7pSDuv8fW": "crispy",
-    "dmu63DLez715hRyhzdigz6akxS2c9W6RQvrToUWuQ1hntcBwF": "crunchy",
-    "dmxvivs72h11DBNyKbeF8KQvcksoZsK9uejLpaWygFHZ2fU9z": "hotdog",
-    "dmyhGnuox8ny9R1efVsWKxNU2FevMxcPZaB66uEJqJhgC4a1W": "tasty",
-    "dmzbLejekGYZmfo5FoSznv5bBik7vGowuLxvzqFs2gZo2kANh": "tender"
-};
-
-const calamari_nodes = [
-    "dmxjZSec4Xj3xz3nBEwSHjQSnRGhvcoB4eRabkiw7pSDuv8fW",
-    "dmu63DLez715hRyhzdigz6akxS2c9W6RQvrToUWuQ1hntcBwF",
-    "dmxvivs72h11DBNyKbeF8KQvcksoZsK9uejLpaWygFHZ2fU9z",
-    "dmyhGnuox8ny9R1efVsWKxNU2FevMxcPZaB66uEJqJhgC4a1W",
-    "dmzbLejekGYZmfo5FoSznv5bBik7vGowuLxvzqFs2gZo2kANh"
-];
+});
+client.connect();
 
 
 class SkipChecker {
@@ -102,6 +86,17 @@ async function handler() {
     let nodeAddress = process.env['SUBSCAN_ENDPOINT'];
     let fromBlock = null;
     let toBlock = null;
+
+    let calamari_names = {};
+    let calamari_nodes = [];
+
+    const node_data = await client.query("SELECT * from nodes order by index")
+        .then(result => {
+            result.rows.forEach(function (value) {
+                calamari_names[value.id] = value.name;
+                calamari_nodes.push(value.id);
+            });
+        });
 
     const checker = new SkipChecker(calamari_names, calamari_nodes);
     const endpoint = nodeAddress + '/api/scan/blocks';
