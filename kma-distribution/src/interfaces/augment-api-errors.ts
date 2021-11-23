@@ -87,29 +87,29 @@ declare module '@polkadot/api/types/errors' {
        **/
       BalanceLow: AugmentedError<ApiType>;
       /**
+       * The first round of vesting is not done yet.
+       **/
+      ClaimTooEarly: AugmentedError<ApiType>;
+      /**
        * An existing vesting schedule already exists for this account that cannot be clobbered.
        **/
       ExistingVestingSchedule: AugmentedError<ApiType>;
       /**
-       * Invalid block number.
+       * Cannot input
        **/
-      InvalidBlockNumber: AugmentedError<ApiType>;
+      InvalidSchedule: AugmentedError<ApiType>;
       /**
-       * The size of new schedule is wrong.
+       * The length of new schedule cannot be bigger/smaller than 7.
        **/
       InvalidScheduleLength: AugmentedError<ApiType>;
-      /**
-       * Not ready for vesting.
-       **/
-      NotReadyForVesting: AugmentedError<ApiType>;
       /**
        * The account given is not vesting.
        **/
       NotVesting: AugmentedError<ApiType>;
       /**
-       * Invalid order of block numbers.
+       * The new schedule should be sorted.
        **/
-      UnsortedBlockNumbers: AugmentedError<ApiType>;
+      UnsortedSchedule: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
@@ -157,7 +157,186 @@ declare module '@polkadot/api/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
+    council: {
+      /**
+       * Members are already initialized!
+       **/
+      AlreadyInitialized: AugmentedError<ApiType>;
+      /**
+       * Duplicate proposals not allowed
+       **/
+      DuplicateProposal: AugmentedError<ApiType>;
+      /**
+       * Duplicate vote ignored
+       **/
+      DuplicateVote: AugmentedError<ApiType>;
+      /**
+       * Account is not a member
+       **/
+      NotMember: AugmentedError<ApiType>;
+      /**
+       * Proposal must exist
+       **/
+      ProposalMissing: AugmentedError<ApiType>;
+      /**
+       * The close call was made too early, before the end of the voting.
+       **/
+      TooEarly: AugmentedError<ApiType>;
+      /**
+       * There can only be a maximum of `MaxProposals` active proposals.
+       **/
+      TooManyProposals: AugmentedError<ApiType>;
+      /**
+       * Mismatched index
+       **/
+      WrongIndex: AugmentedError<ApiType>;
+      /**
+       * The given length bound for the proposal was too low.
+       **/
+      WrongProposalLength: AugmentedError<ApiType>;
+      /**
+       * The given weight bound for the proposal was too low.
+       **/
+      WrongProposalWeight: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    councilMembership: {
+      /**
+       * Already a member.
+       **/
+      AlreadyMember: AugmentedError<ApiType>;
+      /**
+       * Not a member.
+       **/
+      NotMember: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
     cumulusXcm: {
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    democracy: {
+      /**
+       * Cannot cancel the same proposal twice
+       **/
+      AlreadyCanceled: AugmentedError<ApiType>;
+      /**
+       * The account is already delegating.
+       **/
+      AlreadyDelegating: AugmentedError<ApiType>;
+      /**
+       * Identity may not veto a proposal twice
+       **/
+      AlreadyVetoed: AugmentedError<ApiType>;
+      /**
+       * Preimage already noted
+       **/
+      DuplicatePreimage: AugmentedError<ApiType>;
+      /**
+       * Proposal already made
+       **/
+      DuplicateProposal: AugmentedError<ApiType>;
+      /**
+       * Imminent
+       **/
+      Imminent: AugmentedError<ApiType>;
+      /**
+       * The instant referendum origin is currently disallowed.
+       **/
+      InstantNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Too high a balance was provided that the account cannot afford.
+       **/
+      InsufficientFunds: AugmentedError<ApiType>;
+      /**
+       * Invalid hash
+       **/
+      InvalidHash: AugmentedError<ApiType>;
+      /**
+       * Maximum number of votes reached.
+       **/
+      MaxVotesReached: AugmentedError<ApiType>;
+      /**
+       * No proposals waiting
+       **/
+      NoneWaiting: AugmentedError<ApiType>;
+      /**
+       * Delegation to oneself makes no sense.
+       **/
+      Nonsense: AugmentedError<ApiType>;
+      /**
+       * The actor has no permission to conduct the action.
+       **/
+      NoPermission: AugmentedError<ApiType>;
+      /**
+       * No external proposal
+       **/
+      NoProposal: AugmentedError<ApiType>;
+      /**
+       * The account is not currently delegating.
+       **/
+      NotDelegating: AugmentedError<ApiType>;
+      /**
+       * Not imminent
+       **/
+      NotImminent: AugmentedError<ApiType>;
+      /**
+       * Next external proposal not simple majority
+       **/
+      NotSimpleMajority: AugmentedError<ApiType>;
+      /**
+       * The given account did not vote on the referendum.
+       **/
+      NotVoter: AugmentedError<ApiType>;
+      /**
+       * Invalid preimage
+       **/
+      PreimageInvalid: AugmentedError<ApiType>;
+      /**
+       * Preimage not found
+       **/
+      PreimageMissing: AugmentedError<ApiType>;
+      /**
+       * Proposal still blacklisted
+       **/
+      ProposalBlacklisted: AugmentedError<ApiType>;
+      /**
+       * Proposal does not exist
+       **/
+      ProposalMissing: AugmentedError<ApiType>;
+      /**
+       * Vote given for invalid referendum
+       **/
+      ReferendumInvalid: AugmentedError<ApiType>;
+      /**
+       * Too early
+       **/
+      TooEarly: AugmentedError<ApiType>;
+      /**
+       * Maximum number of proposals reached.
+       **/
+      TooManyProposals: AugmentedError<ApiType>;
+      /**
+       * Value too low
+       **/
+      ValueLow: AugmentedError<ApiType>;
+      /**
+       * The account currently has votes attached to it and the operation cannot succeed until
+       * these are removed, either through `unvote` or `reap_vote`.
+       **/
+      VotesExist: AugmentedError<ApiType>;
+      /**
+       * Invalid upper bound.
+       **/
+      WrongUpperBound: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
@@ -339,6 +518,28 @@ declare module '@polkadot/api/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
+    scheduler: {
+      /**
+       * Failed to schedule a call
+       **/
+      FailedToSchedule: AugmentedError<ApiType>;
+      /**
+       * Cannot find the scheduled call.
+       **/
+      NotFound: AugmentedError<ApiType>;
+      /**
+       * Reschedule failed because it does not change scheduled time.
+       **/
+      RescheduleNoChange: AugmentedError<ApiType>;
+      /**
+       * Given target block number is in the past.
+       **/
+      TargetBlockNumberInPast: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
     session: {
       /**
        * Registered duplicate key.
@@ -400,6 +601,66 @@ declare module '@polkadot/api/types/errors' {
        * and the new runtime.
        **/
       SpecVersionNeedsToIncrease: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    technicalCommittee: {
+      /**
+       * Members are already initialized!
+       **/
+      AlreadyInitialized: AugmentedError<ApiType>;
+      /**
+       * Duplicate proposals not allowed
+       **/
+      DuplicateProposal: AugmentedError<ApiType>;
+      /**
+       * Duplicate vote ignored
+       **/
+      DuplicateVote: AugmentedError<ApiType>;
+      /**
+       * Account is not a member
+       **/
+      NotMember: AugmentedError<ApiType>;
+      /**
+       * Proposal must exist
+       **/
+      ProposalMissing: AugmentedError<ApiType>;
+      /**
+       * The close call was made too early, before the end of the voting.
+       **/
+      TooEarly: AugmentedError<ApiType>;
+      /**
+       * There can only be a maximum of `MaxProposals` active proposals.
+       **/
+      TooManyProposals: AugmentedError<ApiType>;
+      /**
+       * Mismatched index
+       **/
+      WrongIndex: AugmentedError<ApiType>;
+      /**
+       * The given length bound for the proposal was too low.
+       **/
+      WrongProposalLength: AugmentedError<ApiType>;
+      /**
+       * The given weight bound for the proposal was too low.
+       **/
+      WrongProposalWeight: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    technicalMembership: {
+      /**
+       * Already a member.
+       **/
+      AlreadyMember: AugmentedError<ApiType>;
+      /**
+       * Not a member.
+       **/
+      NotMember: AugmentedError<ApiType>;
       /**
        * Generic error
        **/

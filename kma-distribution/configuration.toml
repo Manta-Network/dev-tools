@@ -1,5 +1,6 @@
 [node]
 endpoint = 'ws://127.0.0.1:9988'
-endpoint1 = 'wss://crispy.baikal.testnet.calamari.systems'
-batch_size = 2
-signer = 'raven naive awful social road allow fat table ginger plunge wolf benefit'
+# endpoint1 = 'wss://crispy.baikal.testnet.calamari.systems'
+batch_size = 5
+signer = '//Bob'
+min_deposit = 1

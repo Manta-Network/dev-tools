@@ -8,6 +8,8 @@ const fs = require('fs/promises');
 const toml = require('toml');
 const winston = require('winston');
 const jsonFile = require('../token-distribution-list.json');
+// const jsonFile = require('../rewards_kma.json');
+const MIN_DEPOSIT = 1;
 
 const logger = winston.createLogger({
     level: 'info',
@@ -64,15 +66,24 @@ function isValidAddress(address) {
 }
 
 // Create batch calls
-function createBatchCalls(api, batch=[]) {
+function createBatchCalls(api, start, end, batch=[]) {
     let txs = []
     for (const reward of batch) {
         let address = reward['address'];
         if (isValidAddress(address)) {
-            let to_issue = reward['total_reward'];
+            let to_issue = parseFloat(reward['total_reward']);
+
+            // if (to_issue < MIN_DEPOSIT) {
+            //     logger.log({
+            //         level: 'error',
+            //         message: address + "'s total_reward is less than " + to_issue + " KMA."
+            //     });
+            // }
+
             let decimal = api.registry.chainDecimals;
             const factor = new BN(10).pow(new BN(decimal));
             const amount = new BN(to_issue).mul(factor);
+            console.log("to_issue: ", to_issue, reward['total_reward']);
             let tx = api.tx.calamariVesting.vestedTransfer(address, amount);
             txs.push(tx);
             logger.log({
@@ -87,11 +98,77 @@ function createBatchCalls(api, batch=[]) {
         }
     }
 
+    // Push a remark tx to current bacth
+    let batch_remark = "Current batch starts from " + start + " to " + end;
+    let remark_tx = api.tx.system.remark(batch_remark);
+    txs.push(remark_tx);
+
     return txs;
 }
 
-function parseVestingEvent(events = []) {
+async function checkBalanceAfterSendVesting(api, batch=[]) {
+    for (const reward of batch) {
+        let address = reward['address'];
+        if (isValidAddress(address)) {
+            let to_issue = parseFloat(reward['total_reward']);
+            
+            if (to_issue < MIN_DEPOSIT) {
+                logger.log({
+                    level: 'error',
+                    message: address + "'s total_reward is less than " + to_issue + " KMA."
+                });
+            }
 
+            let decimal = api.registry.chainDecimals;
+            const factor = new BN(10).pow(new BN(decimal));
+            const amount = new BN(to_issue).mul(factor);
+            let { data: { free: onchainBalance } } = await api.query.system.account(address);
+            const currentFree = new BN(onchainBalance);
+            if (!currentFree.eq(amount)) {
+            // if (currentFree !== amount) {
+                logger.log({
+                    level: 'error',
+                    message: address + "'s total_reward is not equal to onchain balance,  to_issue: " + amount + ", onchain balance: " + currentFree +  "."
+                });
+            }
+        } else {
+            logger.log({
+                level: 'error',
+                message: address + " is invalid address who doesn't have KMA tokens."
+            });
+        }
+    }
+}
+
+async function trial(api) {
+    let seed = "//Alice";
+    const keyring = new Keyring({ type: 'sr25519' });
+    const sender = keyring.addFromUri(seed);
+
+    let target = "dmxCyE19YWD9XXyqp88BWuPmLuAedf51YZ4bd3s9C3y2JXDNj";
+
+    let to_issue = 123;
+    let decimal = api.registry.chainDecimals;
+    const factor = new BN(10).pow(new BN(decimal));
+    const amount = new BN(to_issue).mul(factor);
+    api.tx.calamariVesting.vestedTransfer(target, amount).signAndSend(sender, ({ events = [], status }) => {
+        if (status.isInBlock) {
+            console.log('Included at block hash', status.asInBlock.toHex());
+            console.log('Events:');
+            events.forEach(({ event: { data, method, section }, phase }) => {
+                console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
+            });
+            console.log(`included in ${status.asInBlock}`);
+            logger.log({
+                level: 'info',
+                message: `included in ${status.asInBlock}`
+            });
+        } else if (status.isFinalized) {
+            let block_hash = status.asFinalized.toHex();
+            console.log('Finalized block hash', block_hash);
+            process.exit(0);
+        }
+    });
 }
 
 async function main() {
@@ -118,16 +195,27 @@ async function main() {
     let times = Math.floor(lengthJson / batchSize);
 
     const nonce = await api.rpc.system.accountNextIndex(sender.address);
+
     for (var i = 0; i < times; ++i) {
+        logger.log({
+            level: 'info',
+            message: "--------------------------------------------------------------------------------------------"
+        });
+
         let start = i * batchSize;
         let end = i * batchSize + batchSize;
-        if (end > lengthJson) {
-            end = lengthJson;
+        if (end >= lengthJson) {
+            end = lengthJson - 1;
         }
         let currentBatch = jsonFile.slice(start, end);
+        console.log("start, end, jsonFile", start, end);
         // add log to tell which batch is started
+        logger.log({
+            level: 'info',
+            message: "this batch is started from " + start + "(" + jsonFile[start]['address'] + ")" + " to " + end + "(" + jsonFile[end]['address'] + ")"
+        });
 
-        const txs = createBatchCalls(api, currentBatch);
+        const txs = createBatchCalls(api, start, end, currentBatch);
         console.log("current nonce: ", nonce.toHuman());
         let next_nonce = parseInt(nonce.toHuman()) + i;
         console.log("next nonce: ", next_nonce);
@@ -146,7 +234,9 @@ async function main() {
                     message: `included in ${status.asInBlock}`
                 });
             } else if (status.isFinalized) {
-                console.log('Finalized block hash', status.asFinalized.toHex());
+                let block_hash = status.asFinalized.toHex();
+                console.log('Finalized block hash', block_hash);
+                // return block_hash;
                 process.exit(0);
             }
 

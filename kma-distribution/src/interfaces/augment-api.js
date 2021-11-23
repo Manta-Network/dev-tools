@@ -1,7 +1,7 @@
 "use strict";
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 require("@polkadot/api/augment/rpc");
 require("./augment-api-consts");
 require("./augment-api-errors");

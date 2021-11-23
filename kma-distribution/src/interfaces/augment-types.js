@@ -1,4 +1,4 @@
 "use strict";
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });

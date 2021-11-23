@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api/types';
-import type { Vec, u128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 import type { Codec } from '@polkadot/types/types';
 
@@ -41,9 +41,75 @@ declare module '@polkadot/api/types/consts' {
     };
     calamariVesting: {
       /**
+       * The maximum length of schedule is allowed.
+       **/
+      maxScheduleLength: u32 & AugmentedConst<ApiType>;
+      /**
        * The minimum amount transferred to call `vested_transfer`.
        **/
       minVestedTransfer: u128 & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
+    democracy: {
+      /**
+       * Period in blocks where an external proposal may not be re-submitted after being vetoed.
+       **/
+      cooloffPeriod: u32 & AugmentedConst<ApiType>;
+      /**
+       * The period between a proposal being approved and enacted.
+       * 
+       * It should generally be a little more than the unstake period to ensure that
+       * voting stakers have an opportunity to remove themselves from the system in the case
+       * where they are on the losing side of a vote.
+       **/
+      enactmentPeriod: u32 & AugmentedConst<ApiType>;
+      /**
+       * Minimum voting period allowed for a fast-track referendum.
+       **/
+      fastTrackVotingPeriod: u32 & AugmentedConst<ApiType>;
+      /**
+       * Indicator for whether an emergency origin is even allowed to happen. Some chains may
+       * want to set this permanently to `false`, others may want to condition it on things such
+       * as an upgrade having happened recently.
+       **/
+      instantAllowed: bool & AugmentedConst<ApiType>;
+      /**
+       * How often (in blocks) new public referenda are launched.
+       **/
+      launchPeriod: u32 & AugmentedConst<ApiType>;
+      /**
+       * The maximum number of public proposals that can exist at any time.
+       **/
+      maxProposals: u32 & AugmentedConst<ApiType>;
+      /**
+       * The maximum number of votes for an account.
+       * 
+       * Also used to compute weight, an overly big value can
+       * lead to extrinsic with very big weight: see `delegate` for instance.
+       **/
+      maxVotes: u32 & AugmentedConst<ApiType>;
+      /**
+       * The minimum amount to be used as a deposit for a public referendum proposal.
+       **/
+      minimumDeposit: u128 & AugmentedConst<ApiType>;
+      /**
+       * The amount of balance that must be deposited per byte of preimage stored.
+       **/
+      preimageByteDeposit: u128 & AugmentedConst<ApiType>;
+      /**
+       * The minimum period of vote locking.
+       * 
+       * It should be no shorter than enactment period to ensure that in the case of an approval,
+       * those successful voters are locked into the consequences that their votes entail.
+       **/
+      voteLockingPeriod: u32 & AugmentedConst<ApiType>;
+      /**
+       * How often (in blocks) to check for new votes.
+       **/
+      votingPeriod: u32 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/
@@ -69,6 +135,22 @@ declare module '@polkadot/api/types/consts' {
        * The maximum amount of signatories allowed in the multisig.
        **/
       maxSignatories: u16 & AugmentedConst<ApiType>;
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec;
+    };
+    scheduler: {
+      /**
+       * The maximum weight that may be scheduled per block for any dispatchables of less
+       * priority than `schedule::HARD_DEADLINE`.
+       **/
+      maximumWeight: u64 & AugmentedConst<ApiType>;
+      /**
+       * The maximum number of scheduled calls in the queue for a single block.
+       * Not strictly enforced, but used for weight estimation.
+       **/
+      maxScheduledPerBlock: u32 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/

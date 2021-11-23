@@ -2,9 +2,10 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api/types';
-import type { Null, Option, Result, U8aFixed, Vec, u128, u32, u64, u8 } from '@polkadot/types';
+import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64, u8 } from '@polkadot/types';
 import type { AccountId32, H256 } from '@polkadot/types/interfaces/runtime';
-import type { FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletMultisigTimepoint, SpRuntimeDispatchError, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteThreshold, PalletMultisigTimepoint, SpRuntimeDispatchError, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { ITuple } from '@polkadot/types/types';
 
 declare module '@polkadot/api/types/events' {
   export interface AugmentedEvents<ApiType> {
@@ -14,7 +15,8 @@ declare module '@polkadot/api/types/events' {
        **/
       BalanceSet: AugmentedEvent<ApiType, [AccountId32, u128, u128]>;
       /**
-       * Some amount was deposited (e.g. for transaction fees). \[who, deposit\]
+       * Some amount was deposited into the account (e.g. for transaction fees). \[who,
+       * deposit\]
        **/
       Deposit: AugmentedEvent<ApiType, [AccountId32, u128]>;
       /**
@@ -37,6 +39,11 @@ declare module '@polkadot/api/types/events' {
        **/
       ReserveRepatriated: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128, FrameSupportTokensMiscBalanceStatus]>;
       /**
+       * Some amount was removed from the account (e.g. for misbehavior). \[who,
+       * amount_slashed\]
+       **/
+      Slashed: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      /**
        * Transfer succeeded. \[from, to, value\]
        **/
       Transfer: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
@@ -44,6 +51,10 @@ declare module '@polkadot/api/types/events' {
        * Some balance was unreserved (moved from reserved to free). \[who, value\]
        **/
       Unreserved: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      /**
+       * Some amount was withdrawn from the account (e.g. for transaction fees). \[who, value\]
+       **/
+      Withdraw: AugmentedEvent<ApiType, [AccountId32, u128]>;
       /**
        * Generic event
        **/
@@ -55,8 +66,13 @@ declare module '@polkadot/api/types/events' {
        **/
       VestingCompleted: AugmentedEvent<ApiType, [AccountId32]>;
       /**
-       * The amount vested has been updated. This could indicate more funds are available. The
-       * balance given is the amount which is left unvested (and thus locked).
+       * Update a vesting schedule.
+       * \[new_schedule\]
+       **/
+      VestingScheduleUpdated: AugmentedEvent<ApiType, [Vec<u64>]>;
+      /**
+       * The amount vested has been updated. This could indicate more funds are available.
+       * The balance given is the amount which is left unvested (and thus locked).
        * \[account, unvested\]
        **/
       VestingUpdated: AugmentedEvent<ApiType, [AccountId32, u128]>;
@@ -71,6 +87,79 @@ declare module '@polkadot/api/types/events' {
       NewCandidacyBond: AugmentedEvent<ApiType, [u128]>;
       NewDesiredCandidates: AugmentedEvent<ApiType, [u32]>;
       NewInvulnerables: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
+    council: {
+      /**
+       * A motion was approved by the required threshold.
+       * \[proposal_hash\]
+       **/
+      Approved: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * A proposal was closed because its threshold was reached or after its duration was up.
+       * \[proposal_hash, yes, no\]
+       **/
+      Closed: AugmentedEvent<ApiType, [H256, u32, u32]>;
+      /**
+       * A motion was not approved by the required threshold.
+       * \[proposal_hash\]
+       **/
+      Disapproved: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * A motion was executed; result will be `Ok` if it returned without error.
+       * \[proposal_hash, result\]
+       **/
+      Executed: AugmentedEvent<ApiType, [H256, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * A single member did some action; result will be `Ok` if it returned without error.
+       * \[proposal_hash, result\]
+       **/
+      MemberExecuted: AugmentedEvent<ApiType, [H256, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * A motion (given hash) has been proposed (by given account) with a threshold (given
+       * `MemberCount`).
+       * \[account, proposal_index, proposal_hash, threshold\]
+       **/
+      Proposed: AugmentedEvent<ApiType, [AccountId32, u32, H256, u32]>;
+      /**
+       * A motion (given hash) has been voted on by given account, leaving
+       * a tally (yes votes and no votes given respectively as `MemberCount`).
+       * \[account, proposal_hash, voted, yes, no\]
+       **/
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, bool, u32, u32]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
+    councilMembership: {
+      /**
+       * Phantom member, never used.
+       **/
+      Dummy: AugmentedEvent<ApiType, []>;
+      /**
+       * One of the members' keys changed.
+       **/
+      KeyChanged: AugmentedEvent<ApiType, []>;
+      /**
+       * The given member was added; see the transaction for who.
+       **/
+      MemberAdded: AugmentedEvent<ApiType, []>;
+      /**
+       * The given member was removed; see the transaction for who.
+       **/
+      MemberRemoved: AugmentedEvent<ApiType, []>;
+      /**
+       * The membership was reset; see the transaction for who the new set is.
+       **/
+      MembersReset: AugmentedEvent<ApiType, []>;
+      /**
+       * Two members were swapped; see the transaction for who.
+       **/
+      MembersSwapped: AugmentedEvent<ApiType, []>;
       /**
        * Generic event
        **/
@@ -92,6 +181,85 @@ declare module '@polkadot/api/types/events' {
        * \[ id \]
        **/
       UnsupportedVersion: AugmentedEvent<ApiType, [U8aFixed]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
+    democracy: {
+      /**
+       * A proposal \[hash\] has been blacklisted permanently.
+       **/
+      Blacklisted: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * A referendum has been cancelled. \[ref_index\]
+       **/
+      Cancelled: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * An account has delegated their vote to another account. \[who, target\]
+       **/
+      Delegated: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
+      /**
+       * A proposal has been enacted. \[ref_index, result\]
+       **/
+      Executed: AugmentedEvent<ApiType, [u32, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * An external proposal has been tabled.
+       **/
+      ExternalTabled: AugmentedEvent<ApiType, []>;
+      /**
+       * A proposal has been rejected by referendum. \[ref_index\]
+       **/
+      NotPassed: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * A proposal has been approved by referendum. \[ref_index\]
+       **/
+      Passed: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * A proposal could not be executed because its preimage was invalid.
+       * \[proposal_hash, ref_index\]
+       **/
+      PreimageInvalid: AugmentedEvent<ApiType, [H256, u32]>;
+      /**
+       * A proposal could not be executed because its preimage was missing.
+       * \[proposal_hash, ref_index\]
+       **/
+      PreimageMissing: AugmentedEvent<ApiType, [H256, u32]>;
+      /**
+       * A proposal's preimage was noted, and the deposit taken. \[proposal_hash, who, deposit\]
+       **/
+      PreimageNoted: AugmentedEvent<ApiType, [H256, AccountId32, u128]>;
+      /**
+       * A registered preimage was removed and the deposit collected by the reaper.
+       * \[proposal_hash, provider, deposit, reaper\]
+       **/
+      PreimageReaped: AugmentedEvent<ApiType, [H256, AccountId32, u128, AccountId32]>;
+      /**
+       * A proposal preimage was removed and used (the deposit was returned).
+       * \[proposal_hash, provider, deposit\]
+       **/
+      PreimageUsed: AugmentedEvent<ApiType, [H256, AccountId32, u128]>;
+      /**
+       * A motion has been proposed by a public account. \[proposal_index, deposit\]
+       **/
+      Proposed: AugmentedEvent<ApiType, [u32, u128]>;
+      /**
+       * A referendum has begun. \[ref_index, threshold\]
+       **/
+      Started: AugmentedEvent<ApiType, [u32, PalletDemocracyVoteThreshold]>;
+      /**
+       * A public proposal has been tabled for referendum vote. \[proposal_index, deposit,
+       * depositors\]
+       **/
+      Tabled: AugmentedEvent<ApiType, [u32, u128, Vec<AccountId32>]>;
+      /**
+       * An \[account\] has cancelled a previous delegation operation.
+       **/
+      Undelegated: AugmentedEvent<ApiType, [AccountId32]>;
+      /**
+       * An external proposal has been vetoed. \[who, proposal_hash, until\]
+       **/
+      Vetoed: AugmentedEvent<ApiType, [AccountId32, H256, u32]>;
       /**
        * Generic event
        **/
@@ -176,10 +344,13 @@ declare module '@polkadot/api/types/events' {
        **/
       ValidationFunctionApplied: AugmentedEvent<ApiType, [u32]>;
       /**
-       * The validation function has been scheduled to apply as of the contained relay chain
-       * block number.
+       * The relay-chain aborted the upgrade process.
        **/
-      ValidationFunctionStored: AugmentedEvent<ApiType, [u32]>;
+      ValidationFunctionDiscarded: AugmentedEvent<ApiType, []>;
+      /**
+       * The validation function has been scheduled to apply.
+       **/
+      ValidationFunctionStored: AugmentedEvent<ApiType, []>;
       /**
        * Generic event
        **/
@@ -307,6 +478,24 @@ declare module '@polkadot/api/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
+    scheduler: {
+      /**
+       * Canceled some task. \[when, index\]
+       **/
+      Canceled: AugmentedEvent<ApiType, [u32, u32]>;
+      /**
+       * Dispatched some task. \[task, id, result\]
+       **/
+      Dispatched: AugmentedEvent<ApiType, [ITuple<[u32, u32]>, Option<Bytes>, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * Scheduled some task. \[when, index\]
+       **/
+      Scheduled: AugmentedEvent<ApiType, [u32, u32]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
     session: {
       /**
        * New session has happened. Note that the argument is the \[session_index\], not the
@@ -361,6 +550,79 @@ declare module '@polkadot/api/types/events' {
        * On on-chain remark happened. \[origin, remark_hash\]
        **/
       Remarked: AugmentedEvent<ApiType, [AccountId32, H256]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
+    technicalCommittee: {
+      /**
+       * A motion was approved by the required threshold.
+       * \[proposal_hash\]
+       **/
+      Approved: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * A proposal was closed because its threshold was reached or after its duration was up.
+       * \[proposal_hash, yes, no\]
+       **/
+      Closed: AugmentedEvent<ApiType, [H256, u32, u32]>;
+      /**
+       * A motion was not approved by the required threshold.
+       * \[proposal_hash\]
+       **/
+      Disapproved: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * A motion was executed; result will be `Ok` if it returned without error.
+       * \[proposal_hash, result\]
+       **/
+      Executed: AugmentedEvent<ApiType, [H256, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * A single member did some action; result will be `Ok` if it returned without error.
+       * \[proposal_hash, result\]
+       **/
+      MemberExecuted: AugmentedEvent<ApiType, [H256, Result<Null, SpRuntimeDispatchError>]>;
+      /**
+       * A motion (given hash) has been proposed (by given account) with a threshold (given
+       * `MemberCount`).
+       * \[account, proposal_index, proposal_hash, threshold\]
+       **/
+      Proposed: AugmentedEvent<ApiType, [AccountId32, u32, H256, u32]>;
+      /**
+       * A motion (given hash) has been voted on by given account, leaving
+       * a tally (yes votes and no votes given respectively as `MemberCount`).
+       * \[account, proposal_hash, voted, yes, no\]
+       **/
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, bool, u32, u32]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
+    technicalMembership: {
+      /**
+       * Phantom member, never used.
+       **/
+      Dummy: AugmentedEvent<ApiType, []>;
+      /**
+       * One of the members' keys changed.
+       **/
+      KeyChanged: AugmentedEvent<ApiType, []>;
+      /**
+       * The given member was added; see the transaction for who.
+       **/
+      MemberAdded: AugmentedEvent<ApiType, []>;
+      /**
+       * The given member was removed; see the transaction for who.
+       **/
+      MemberRemoved: AugmentedEvent<ApiType, []>;
+      /**
+       * The membership was reset; see the transaction for who the new set is.
+       **/
+      MembersReset: AugmentedEvent<ApiType, []>;
+      /**
+       * Two members were swapped; see the transaction for who.
+       **/
+      MembersSwapped: AugmentedEvent<ApiType, []>;
       /**
        * Generic event
        **/
