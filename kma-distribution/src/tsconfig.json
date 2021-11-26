@@ -1,10 +1,29 @@
 {
+  "compilerOptions": {
+    "paths": {
+      "kma-distribution/*": ["./src/*"],
+      "@polkadot/api/augment": ["./interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["./interfaces/augment-types.ts"]
+    },
     "target": "es2019",
     "module": "CommonJS",
-    "compilerOptions": {
-      "paths": {
-        "@polkadot/api/augment": ["./interfaces/augment-api.ts"],
-        "@polkadot/types/augment": ["./interfaces/augment-types.ts"]
-      }
-    }
+    "jsx": "preserve",
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "build/**/*",
+    "node_modules"
+  ]
 }

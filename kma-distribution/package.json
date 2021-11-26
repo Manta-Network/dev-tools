@@ -5,9 +5,8 @@
     "main": "index.js",
     "scripts": {
       "build": "yarn generate:defs && yarn generate:meta",
-      "start": "ts-node ./src/index.ts",
-      "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package sample-polkadotjs-typegen/interfaces --input ./src/interfaces",
-      "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package sample-polkadotjs-typegen/interfaces --endpoint ./calamari.json --output ./src/interfaces",
+      "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kma-distribution/interfaces --input ./src/interfaces --endpoint ./calamari.json",
+      "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kma-distribution/interfaces --endpoint ./calamari.json --output ./src/interfaces",
       "lint": "tsc --noEmit --pretty",
       "update-metadata": ""
     },

@@ -99,7 +99,7 @@ declare module '@polkadot/api/types/errors' {
        **/
       InvalidSchedule: AugmentedError<ApiType>;
       /**
-       * The length of new schedule cannot be bigger/smaller than 7.
+       * The length of new schedule cannot be bigger/smaller than 6.
        **/
       InvalidScheduleLength: AugmentedError<ApiType>;
       /**
@@ -661,6 +661,20 @@ declare module '@polkadot/api/types/errors' {
        * Not a member.
        **/
       NotMember: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    transactionPause: {
+      /**
+       * can not pause
+       **/
+      CannotPause: AugmentedError<ApiType>;
+      /**
+       * invalid character encoding
+       **/
+      InvalidCharacter: AugmentedError<ApiType>;
       /**
        * Generic error
        **/

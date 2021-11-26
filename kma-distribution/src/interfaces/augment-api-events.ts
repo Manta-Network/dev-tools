@@ -628,6 +628,20 @@ declare module '@polkadot/api/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
+    transactionPause: {
+      /**
+       * Paused transaction . \[pallet_name_bytes, function_name_bytes\]
+       **/
+      TransactionPaused: AugmentedEvent<ApiType, [Bytes, Bytes]>;
+      /**
+       * Unpaused transaction . \[pallet_name_bytes, function_name_bytes\]
+       **/
+      TransactionUnpaused: AugmentedEvent<ApiType, [Bytes, Bytes]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
     utility: {
       /**
        * Batch of dispatches completed fully with no error.

@@ -1,14 +1,14 @@
-import './interfaces/augment-api';
-import './interfaces/augment-types';
+require('./src/interfaces/augment-api');
+require('./src/interfaces/augment-types');
 
-import { ApiPromise, WsProvider } from '@polkadot/api';
+const { ApiPromise, WsProvider } = require('@polkadot/api');
 const { Keyring, decodeAddress, encodeAddress } = require('@polkadot/keyring');
 const { hexToU8a, isHex, BN } = require('@polkadot/util');
 const fs = require('fs/promises');
 const toml = require('toml');
 const winston = require('winston');
-const jsonFile = require('../token-distribution-list.json');
-// const jsonFile = require('../rewards_kma.json');
+const jsonFile = require('./token-distribution-list.json');
+// const jsonFile = require('./rewards_kma.json');
 const MIN_DEPOSIT = 1;
 
 const logger = winston.createLogger({
@@ -25,6 +25,10 @@ const logger = winston.createLogger({
     ],
 });
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function readProjectConfiguration(configPath) {
     const content = await fs.readFile(configPath, { encoding: 'utf-8' })
     const config = toml.parse(content)
@@ -34,25 +38,17 @@ async function readProjectConfiguration(configPath) {
 // Create a promise API instance of the passed in node address.
 async function createPromiseApi(nodeAddress) {
     const wsProvider = new WsProvider(nodeAddress);
-    try {
-        const api = await new ApiPromise({ 
-            provider: wsProvider,
-            types: {
-                "Address": "MultiAddress",
-                "LookupSource": "MultiAddress",
-                "BalanceOf": "Balance",
-                "Balance": "u128"
-            }
-        });
+    // try {
+        const api = await new ApiPromise({ provider: wsProvider });
         await api.isReady;
         return api;
-    } catch (error) {
-        let message = "Failed to create client due to: " + error;
-        logger.log({
-            level: 'error',
-            message: message
-        });
-    }
+    // } catch (error) {
+    //     let message = "Failed to create client due to: " + error;
+    //     logger.log({
+    //         level: 'error',
+    //         message: message
+    //     });
+    // }
 }
 
 // Ensure address is valid.
@@ -83,8 +79,9 @@ function createBatchCalls(api, start, end, batch=[]) {
             let decimal = api.registry.chainDecimals;
             const factor = new BN(10).pow(new BN(decimal));
             const amount = new BN(to_issue).mul(factor);
-            console.log("to_issue: ", to_issue, reward['total_reward']);
+            // console.log("to_issue: ", to_issue, reward['total_reward']);
             let tx = api.tx.calamariVesting.vestedTransfer(address, amount);
+            // let tx = api.tx.balances.transfer(address, 100);
             txs.push(tx);
             logger.log({
                 level: 'info',
@@ -99,7 +96,7 @@ function createBatchCalls(api, start, end, batch=[]) {
     }
 
     // Push a remark tx to current bacth
-    let batch_remark = "Current batch starts from " + start + " to " + end;
+    let batch_remark = "Current batch starts from " + start + " to " + (end-1);
     let remark_tx = api.tx.system.remark(batch_remark);
     txs.push(remark_tx);
 
@@ -140,37 +137,6 @@ async function checkBalanceAfterSendVesting(api, batch=[]) {
     }
 }
 
-async function trial(api) {
-    let seed = "//Alice";
-    const keyring = new Keyring({ type: 'sr25519' });
-    const sender = keyring.addFromUri(seed);
-
-    let target = "dmxCyE19YWD9XXyqp88BWuPmLuAedf51YZ4bd3s9C3y2JXDNj";
-
-    let to_issue = 123;
-    let decimal = api.registry.chainDecimals;
-    const factor = new BN(10).pow(new BN(decimal));
-    const amount = new BN(to_issue).mul(factor);
-    api.tx.calamariVesting.vestedTransfer(target, amount).signAndSend(sender, ({ events = [], status }) => {
-        if (status.isInBlock) {
-            console.log('Included at block hash', status.asInBlock.toHex());
-            console.log('Events:');
-            events.forEach(({ event: { data, method, section }, phase }) => {
-                console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
-            });
-            console.log(`included in ${status.asInBlock}`);
-            logger.log({
-                level: 'info',
-                message: `included in ${status.asInBlock}`
-            });
-        } else if (status.isFinalized) {
-            let block_hash = status.asFinalized.toHex();
-            console.log('Finalized block hash', block_hash);
-            process.exit(0);
-        }
-    });
-}
-
 async function main() {
     console.log("address: ", jsonFile[0]['address']);
     console.log("total_reward: ", jsonFile[9]['total_reward']);
@@ -186,9 +152,12 @@ async function main() {
     const nodeAddress = config['node']['endpoint'];
     const api = await createPromiseApi(nodeAddress);
 
-    let seed = config['node']['signer'];
-    const keyring = new Keyring({ type: 'sr25519' });
+    // let seed = config['node']['signer'];
+    let seed = "//Alice";
+    const keyring = new Keyring({ type: 'sr25519', ss58Format: 78 });
     const sender = keyring.addFromUri(seed);
+
+    console.log("Alice: ", sender.address)
 
     let lengthJson = jsonFile.length;
     let batchSize = config['node']['batch_size'];
@@ -205,14 +174,14 @@ async function main() {
         let start = i * batchSize;
         let end = i * batchSize + batchSize;
         if (end >= lengthJson) {
-            end = lengthJson - 1;
+            end = lengthJson;
         }
         let currentBatch = jsonFile.slice(start, end);
         console.log("start, end, jsonFile", start, end);
         // add log to tell which batch is started
         logger.log({
             level: 'info',
-            message: "this batch is started from " + start + "(" + jsonFile[start]['address'] + ")" + " to " + end + "(" + jsonFile[end]['address'] + ")"
+            message: "this batch is started from " + start + "(" + jsonFile[start]['address'] + ")" + " to " + (end-1) + "(" + jsonFile[end-1]['address'] + ")"
         });
 
         const txs = createBatchCalls(api, start, end, currentBatch);
@@ -242,6 +211,7 @@ async function main() {
 
             // Ensure all txs in a batch are submitted successfully.
         });
+        await sleep(6000);
     }
 }
 
