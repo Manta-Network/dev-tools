@@ -10,8 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@polkadot/api": "^6.5.2",
-    "@polkadot/types": "^6.5.2"
+    "@polkadot/api": "^6.9.2",
+    "@polkadot/types": "^6.9.2",
+    "minimist": "^1.2.5"
   }
 }
 
