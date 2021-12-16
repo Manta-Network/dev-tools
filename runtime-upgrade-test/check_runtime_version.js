@@ -10,6 +10,9 @@ async function main() {
   
   let nodeAddress = "ws://127.0.0.1:9801";
   const args = require('minimist')(process.argv.slice(2))
+  if (args.hasOwnProperty('address')) {
+    nodeAddress = args['address'];
+  }
   let old_spec_version; 
   if (args.hasOwnProperty('compare_to')) {
       old_spec_version = args['compare_to'];
