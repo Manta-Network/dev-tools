@@ -8,14 +8,16 @@ async function createPromiseApi(nodeAddress) {
 }
 async function main() {
   
-  let nodeAddress = "ws://127.0.0.1:9801";
+  let nodeAddress = "ws://127.0.0.1:9999";
   const args = require('minimist')(process.argv.slice(2))
   if (args.hasOwnProperty('address')) {
     nodeAddress = args['address'];
+    console.log("Using passed parameter address: " + nodeAddress);
   }
   let old_spec_version; 
   if (args.hasOwnProperty('compare_to')) {
-      old_spec_version = args['compare_to'];
+    old_spec_version = args['compare_to'];
+    console.log("Using passed parameter compare_to: " + old_spec_version);
   }
   
   if(old_spec_version) {
@@ -25,10 +27,12 @@ async function main() {
     const spec_version = +runtime_version["specVersion"].words;
 
     if(spec_version > old_spec_version) {
+      console.log("Spec version is successfully bumped to " + spec_version);
       process.exit(1);
     }
   }
 
+  console.log("Spec version was not bumped!");
   process.exit(0);
 }
 
