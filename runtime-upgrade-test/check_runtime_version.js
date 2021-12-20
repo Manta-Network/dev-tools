@@ -28,12 +28,12 @@ async function main() {
 
     if(spec_version > old_spec_version) {
       console.log("Spec version is successfully bumped to " + spec_version);
-      process.exit(1);
+      process.exit(0);
     }
   }
 
   console.log("Spec version was not bumped!");
-  process.exit(0);
+  process.exit(1);
 }
 
 main().catch(console.error);
