@@ -35,7 +35,7 @@ async function main() {
   if(targetBlockNum) {
     const paraApi = await createPromiseApi(paraAddress);
     const relayApi = await createPromiseApi(relayAddress);
-    let time = 5 * 60;
+    let time = 10 * 60;
 
     while (time > 0) {
       const paraHeader = await paraApi.rpc.chain.getHeader();
