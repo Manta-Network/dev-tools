@@ -8,7 +8,7 @@ async function createPromiseApi(nodeAddress) {
 }
 async function main() {
   
-  let paraAddress = "ws://127.0.0.1:9999";
+  let paraAddress = "ws://127.0.0.1:9944";
   const args = require('minimist')(process.argv.slice(3))
   if (args.hasOwnProperty('para_address')) {
     paraAddress = args['para_address'];
