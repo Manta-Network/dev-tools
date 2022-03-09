@@ -8,12 +8,19 @@ async function createPromiseApi(nodeAddress) {
 }
 async function main() {
   
-  let nodeAddress = "ws://127.0.0.1:9999";
-  const args = require('minimist')(process.argv.slice(2))
-  if (args.hasOwnProperty('address')) {
-    nodeAddress = args['address'];
-    console.log("Using passed parameter address: " + nodeAddress);
+  let paraAddress = "ws://127.0.0.1:9999";
+  const args = require('minimist')(process.argv.slice(3))
+  if (args.hasOwnProperty('para_address')) {
+    paraAddress = args['para_address'];
+    console.log("Using passed parameter para_address: " + paraAddress);
   }
+
+  let relayAddress = "ws://127.0.0.1:9945";
+  if (args.hasOwnProperty('relay_address')) {
+    relayAddress = args['relay_address'];
+    console.log("Using passed parameter relay_address: " + relayAddress);
+  }
+
   let targetBlockNum; 
   if (args.hasOwnProperty('target_block')) {
     targetBlockNum = args['target_block'];
@@ -21,12 +28,16 @@ async function main() {
   }
   
   if(targetBlockNum) {
-    const api = await createPromiseApi(nodeAddress);
+    const para_api = await createPromiseApi(paraAddress);
+    const paraHeader = await para_api.rpc.chain.getHeader();
+    const paraBlockNum = paraHeader.number.toNumber();
 
-    const header = await api.rpc.chain.getHeader();
-    const blockNum = header.number.toNumber();
-    if(blockNum >= targetBlockNum) {
-      console.log("Successfully finalized block number " + blockNum);
+    const relayApi = await createPromiseApi(relayAddress);
+    const relayHeader = await relayApi.rpc.chain.getHeader();
+    const relayBlockNum = relayHeader.number.toNumber();
+
+    if(paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
+      console.log("Successfully finalized block number " + paraBlockNum);
       process.exit(0);
     }
     console.log("Failed to finalize the target block number " + targetBlockNum);
