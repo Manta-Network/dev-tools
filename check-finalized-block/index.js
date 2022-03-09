@@ -6,6 +6,11 @@ async function createPromiseApi(nodeAddress) {
   await api.isReady;
   return api;
 }
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 async function main() {
   
   let paraAddress = "ws://127.0.0.1:9944";
@@ -28,19 +33,27 @@ async function main() {
   }
   
   if(targetBlockNum) {
-    const para_api = await createPromiseApi(paraAddress);
-    const paraHeader = await para_api.rpc.chain.getHeader();
-    const paraBlockNum = paraHeader.number.toNumber();
-
+    const paraApi = await createPromiseApi(paraAddress);
     const relayApi = await createPromiseApi(relayAddress);
-    const relayHeader = await relayApi.rpc.chain.getHeader();
-    const relayBlockNum = relayHeader.number.toNumber();
+    let time = 5 * 60;
 
-    if(paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
-      console.log("Successfully finalized para block number " + paraBlockNum);
-      console.log("Successfully finalized relay block number " + relayBlockNum);
-      process.exit(0);
+    while (time > 0) {
+      const paraHeader = await paraApi.rpc.chain.getHeader();
+      const paraBlockNum = paraHeader.number.toNumber();
+
+      const relayHeader = await relayApi.rpc.chain.getHeader();
+      const relayBlockNum = relayHeader.number.toNumber();
+
+      if(paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
+        console.log("Successfully finalized para block number " + paraBlockNum);
+        console.log("Successfully finalized relay block number " + relayBlockNum);
+        process.exit(0);
+      }
+      time-=5;
+      await delay(1000 * 5)
     }
+   
+    
     console.log("Failed to finalize the target block number " + targetBlockNum);
     process.exit(1);
   }
