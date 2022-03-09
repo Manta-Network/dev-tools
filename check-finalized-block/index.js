@@ -9,7 +9,7 @@ async function createPromiseApi(nodeAddress) {
 async function main() {
   
   let paraAddress = "ws://127.0.0.1:9944";
-  const args = require('minimist')(process.argv.slice(3))
+  const args = require('minimist')(process.argv.slice(2))
   if (args.hasOwnProperty('para_address')) {
     paraAddress = args['para_address'];
     console.log("Using passed parameter para_address: " + paraAddress);
@@ -37,7 +37,8 @@ async function main() {
     const relayBlockNum = relayHeader.number.toNumber();
 
     if(paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
-      console.log("Successfully finalized block number " + paraBlockNum);
+      console.log("Successfully finalized para block number " + paraBlockNum);
+      console.log("Successfully finalized relay block number " + relayBlockNum);
       process.exit(0);
     }
     console.log("Failed to finalize the target block number " + targetBlockNum);
