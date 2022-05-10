@@ -13,7 +13,7 @@ async function createPromiseApi(nodeAddress) {
 }
 
 async function main() {
-    const nodeAddress = 'ws://127.0.0.1:9921';
+    const nodeAddress = 'ws://127.0.0.1:9806';
     const api = await createPromiseApi(nodeAddress);
 
     // Retrieve the upgrade key from the chain state
@@ -26,12 +26,13 @@ async function main() {
     const newPair = keyring.addFromUri(PHRASE);
 
     // Retrieve the runtime to upgrade
-    const code = fs.readFileSync('calamari.wasm').toString('hex');
-    const proposal = api.tx.system && api.tx.system.setCode
-        ? api.tx.system.setCode(`0x${code}`) // For newer versions of Substrate
-        : api.tx.consensus.setCode(`0x${code}`); // For previous versions
+    //const code = fs.readFileSync('calamari.wasm').toString('hex');
+    const proposal =  api.tx.system.setStorage([
+      [ `0xa66d1aecfdbd14d785a4d1d8723b4beba97ed1f827296bb679b464ff1290ddc1000500000000000000`,
+        `0x83590b405cf760cb1660fc295f7810d428fb27d946f2bba38cb9ca5b7d4ed643c5e56ae65158f96c93573210b6a0f36eadf01166b77dbe49247947f669daa1225e11b47dd076bf70568bd8d9ceb93a90e49ba1ce0a651f2a0107364da1d2f018776494b592a8eb26b8af06fb56e681e3efadd4d23f12eedac960fdeb455f66fbeb0967bf`]
+    ]);
 
-    console.log(`Upgrading from ${adminId}, ${code.length / 2} bytes`);
+    //console.log(`Upgrading from ${adminId}, ${code.length / 2} bytes`);
 
     // Perform the actual chain upgrade via the sudo module
     api.tx.sudo.sudoUncheckedWeight(proposal, 1)
