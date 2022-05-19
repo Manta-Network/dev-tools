@@ -19,8 +19,8 @@ async function main() {
     
     const api = await createPromiseApi(nodeAddress);
 
-    let lastHeader = await api.rpc.chain.getFinalizedHead();
-    console.log(lastHeader.hash.toHuman());
+    let lastHeader = await (await api.rpc.chain.getBlockHash());
+    console.log(lastHeader.toHuman());
     process.exit(0);
 }
 
