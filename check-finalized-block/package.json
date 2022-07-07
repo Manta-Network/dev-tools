@@ -1,5 +1,5 @@
 {
-  "name": "measure-block-time",
+  "name": "check-finalized-block",
   "version": "1.0.0",
   "main": "index.js",
  "scripts": {
