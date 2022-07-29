@@ -1,11 +1,14 @@
-use std::{env,
+use std::{
+        env,
         process,
         vec,
         path::Path,
         fs::OpenOptions,
         str::from_utf8, 
         collections::HashMap,
-        io::{SeekFrom, Seek, Read, Write}};
+        io::{SeekFrom, Seek, Read, Write},
+        cmp
+    };
 
 use regex;
 use crate::config;
@@ -56,9 +59,14 @@ pub fn parse_git_log(config: &config::Config, previous_release: &str) -> Vec<Str
         git_log.arg("-C").arg(r_path);
     };
     
-    git_log.arg("log")
-        .arg(format!("{}..", previous_release))
-        .arg("--oneline");
+    git_log.arg("log");
+
+    //add in log range if previous release was found
+    if !previous_release.trim().is_empty() {
+        git_log.arg(format!("{}..", previous_release));
+    }
+
+    git_log.arg(format!("{}..", previous_release)).arg("--oneline");
 
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
@@ -179,8 +187,12 @@ pub fn run() {
     // find previous version in changelog
     // TODO: Add pattern to config.json
     let version_pattern = regex::Regex::new(r"v[0-9].[0-9].[0-9]").expect("Failed constructing changelog version regex");
-    let prev_version_loc = version_pattern.find(&changelog_contents).expect("Could not find version in changelog");
-    let prev_version = &changelog_contents[prev_version_loc.range()];
+    let prev_version_range = match version_pattern.find(&changelog_contents) {
+        Some(m) => m.range(),
+        None => (0..0),
+    };
+
+    let prev_version = &changelog_contents[prev_version_range.clone()];
 
     let mut commit_data = parse_git_log(&config, prev_version);
     //remove last string as its going to be empty
@@ -191,7 +203,7 @@ pub fn run() {
 
     // get current version from branch name
     // TODO: Add pattern to config.json
-    let current_version = get_release_version(&config, version_pattern);
+    let current_version = get_release_version(&config, version_pattern.clone());
     let mut new_changelog_block = format!(
     "# CHANGELOG \n\n## {}\n", current_version);
     
@@ -205,8 +217,23 @@ pub fn run() {
     }
 
     new_changelog_block.push_str("\n");
+    
+    let mut changelog_contents_offset = cmp::max(0,prev_version_range.start-3);
+    // if the version is the same we want to overwrite the previous version block
+    // this may be used in the case of re-release 
+
+    // TODO: Add in overwrite, for now most old pull requests dont have labels so
+    // it is dangerous to overwrite on re-release
+    assert!(!(prev_version == current_version), "Current version you are trying to release matches older version in changelog");
+    //if prev_version == current_version{
+        // let pp_version_range = version_pattern.find_at(&changelog_contents, prev_version_range.end)
+        // .expect("Failed finding previous changelog block in overwriting previous block");
+
+        // changelog_contents_offset = pp_version_range.end()-3;
+    //}
+
     // add in previous changelog data
-    new_changelog_block.push_str(&changelog_contents[prev_version_loc.start()-3..]);
+    new_changelog_block.push_str(&changelog_contents[changelog_contents_offset..]);
 
     // go back to start of file and overwrite
     // using overwriting over whole contents as that will let us 
