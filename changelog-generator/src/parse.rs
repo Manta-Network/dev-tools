@@ -1,5 +1,4 @@
 use std::{
-    cmp,
     collections::HashMap,
     env,
     fs::OpenOptions,
@@ -239,27 +238,31 @@ pub fn run() {
         .expect("Failed reading changelog contents");
 
     // find previous version in changelog
-    let version_pattern = regex::Regex::new(&config.version_pattern)
+    let version_pattern = regex::Regex::new(&format!("## {}",&config.version_pattern))
         .expect("Failed constructing changelog version regex");
     let prev_version_range = match version_pattern.find(&changelog_contents) {
         Some(m) => m.range(),
         None => (0..0),
     };
-    let prev_version = &changelog_contents[prev_version_range.clone()];
+    // accommodate +3 to remove the hashtags
+    let prev_version = &changelog_contents[prev_version_range.start + 3 ..prev_version_range.end];
     // find current version from branch name
-    let current_version = get_release_version(&config, &version_pattern);
-
-    let mut changelog_contents_offset = cmp::max(0, prev_version_range.start - 3);
+    let current_version = get_release_version(&config, &regex::Regex::new(&config.version_pattern).expect("Failed constructing changelog version regex"));
+    
+    let mut changelog_contents_offset = prev_version_range.start;
     let mut release_range = (prev_version, "");
+    
     if prev_version == current_version {
         // find the second version found in the changelog to know where to overwrite
         let pp_version_range = version_pattern
             .find_at(&changelog_contents, prev_version_range.end)
-            .expect("Failed finding previous changelog block while overwriting previous block");
-        let pp_version = &changelog_contents[pp_version_range.range()];
+            .expect("Failed finding previous changelog block while overwriting previous block").range();
 
+        // accommodate +3 to remove the hashtags
+        let pp_version = &changelog_contents[pp_version_range.start + 3 .. pp_version_range.end];
         release_range = (pp_version, prev_version);
-        changelog_contents_offset = pp_version_range.start() - 3; // -3 to accommodate "## "
+
+        changelog_contents_offset = pp_version_range.start; // -3 to accommodate "## "
     }
 
     let mut commit_data = parse_git_log(&config, release_range);
