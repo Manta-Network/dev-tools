@@ -16,5 +16,5 @@
     "prefix_labels":{
 
     },
-    "version_pattern": "v[0-9].[0-9].[0-9]"
+    "version_pattern": "v[0-9]+.[0-9]+.[0-9]+"
 }
