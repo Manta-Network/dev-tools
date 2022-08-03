@@ -239,32 +239,37 @@ pub fn run() {
 
     // find previous version in changelog use ## and /n to make it more concrete to not mess up if there is
     // a version string somewhere in the commit messages
-    let version_pattern = regex::Regex::new(&format!("## {}\n",&config.version_pattern))
+    let version_pattern = regex::Regex::new(&format!("## {}\n", &config.version_pattern))
         .expect("Failed constructing changelog version regex");
     let prev_version_range = match version_pattern.find(&changelog_contents) {
-        Some(m) => (m.start()+3 .. m.end()-1),
+        Some(m) => (m.start() + 3..m.end() - 1),
         None => (0..0),
     };
 
     // accommodate +3 to remove the hashtags and -1 at the end to remove the new line
     let prev_version = &changelog_contents[prev_version_range.start..prev_version_range.end];
     // find current version from branch name
-    let current_version = get_release_version(&config, &regex::Regex::new(&config.version_pattern).expect("Failed constructing changelog version regex"));
-    
+    let current_version = get_release_version(
+        &config,
+        &regex::Regex::new(&config.version_pattern)
+            .expect("Failed constructing changelog version regex"),
+    );
+
     // compensate +3 offset back for the "## " string at the start of the version line
     let mut changelog_contents_offset = prev_version_range.start - 3;
     let mut release_range = (prev_version, "");
-    
+
     if prev_version == current_version {
         // find the second version found in the changelog to know where to overwrite
         let pp_version_range = version_pattern
             .find_at(&changelog_contents, prev_version_range.end)
-            .expect("Failed finding previous changelog block while overwriting previous block").range();
+            .expect("Failed finding previous changelog block while overwriting previous block")
+            .range();
 
         // accommodate +3 to remove the hashtags
-        let pp_version = &changelog_contents[pp_version_range.start + 3 .. pp_version_range.end-1];
+        let pp_version = &changelog_contents[pp_version_range.start + 3..pp_version_range.end - 1];
         release_range = (pp_version, prev_version);
-        
+
         changelog_contents_offset = pp_version_range.start;
     }
 
