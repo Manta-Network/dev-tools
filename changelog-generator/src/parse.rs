@@ -146,6 +146,25 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
         let json_data: serde_json::Value =
             serde_json::from_str(from_utf8(&response.stdout).expect("to utf8 failed"))
                 .expect("Failed converting raw data to json");
+
+        //check if pr_ID is real ID or not, normal pull requests dont have message as the API will be successful
+        if let Some(_) = json_data.get("message") {
+            continue;
+        } else {
+            // This case is a rare exception, more of a fool proof
+            // In the case someone has merged without a pull request and the commit name ends with (#XYZ)
+            // as we don't have any other way of checking
+            // using contains instead of normal comparing because of github tags in merges like [manta]
+            // in the commit title that appear in the API but not the local git log
+            if !json_data["title"]
+                .as_str()
+                .expect("could not read PR title from API")
+                .contains(commit_msg.trim())
+            {
+                continue;
+            }
+        }
+
         let pull_request_url = json_data["html_url"]
             .as_str()
             .expect("Failed reading PR, make sure -u arguments are correct")
