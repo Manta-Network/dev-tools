@@ -1,0 +1,24 @@
+{
+  "name": "refund-crowdloan-contributors",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "yarn build && polkadot-dev-build-ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@polkadot/api": "^9.0.1",
+    "@polkadot/api-derive": "^9.0.1",
+    "@polkadot/keyring": "^10.1.2",
+    "@polkadot/types": "^9.0.1",
+    "@polkadot/util": "^10.1.2",
+    "@polkadot/util-crypto": "^10.1.2",
+    "csvtojson": "^2.0.10",
+    "toml": "^3.0.0",
+    "winston": "^3.3.3"
+  }
+}
+

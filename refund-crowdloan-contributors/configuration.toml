@@ -1,0 +1,5 @@
+[node]
+endpoint = 'ws://127.0.0.1:9944'
+batch_size = 500
+signer = '//Alice'
+para_id = 2122
