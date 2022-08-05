@@ -1,6 +1,16 @@
-use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path, process};
 
 pub type LabelMap = HashMap<String, String>;
+
+const CLI_HELP_STR: &str = "#####################################
+Changelog Generator Help\n
+### Mandatory Arguments:
+--user/-u : @yourgithub_username @github_password/authtoken
+\n### Optional Arguments(Can be customised from the config file):\n
+--config/-c Path to config.json
+--repo/-r Path to repo if not calling from the repo\n
+--help/-h Prints Help and does not execute script
+#######################################\n";
 
 // Holds data from the cli args passed
 // 'repo_path' path to the repo if you are calling the script outside of the local repo.
@@ -19,49 +29,69 @@ pub struct Config<'a> {
 
 impl<'a> Config<'a> {
     pub fn new(args: &'a Vec<String>) -> Self {
+        if args.len() < 2 {
+            println!("{}", CLI_HELP_STR);
+            process::exit(1);
+        }
+
         let mut cli_repo_path = "";
         let mut auth_pair = ("", "");
         let mut config_path = "./config.json";
 
-        for idx in 1..args.len() {
-            match args[idx].as_str() {
+        let mut arg_it = args[1..].iter().peekable();
+        while let Some(arg) = arg_it.next() {
+            match arg.as_str() {
                 "--config" | "-c" => {
                     assert!(
-                        idx + 1 < args.len(),
-                        "Invalid Config Arguments ( --config/-c followed by the config path"
+                        !arg_it.peek().is_none(),
+                        "Invalid Config Arguments ( --config/-c followed by the config path )"
                     );
-                    if Path::new(&args[idx + 1]).exists() {
-                        config_path = args[idx + 1].as_str();
+
+                    if Path::new(&arg_it.peek().unwrap()).exists() {
+                        config_path = arg_it.next().unwrap().as_str();
                     } else {
                         println!(
                             "{}",
                             "Using default config location as the path given does not exist"
                         );
+                        //consume this as we want to skip it
+                        arg_it.nth(0);
                     }
                 }
                 "--user" | "-u" => {
                     assert!(
-                        idx + 2 < args.len(),
-                        "Invalid Config Arguments ( --config/-c followed by the config path"
+                        !arg_it.peek().is_none(),
+                        "Invalid Authentication info ( --user/-u followed by your github username then your password/authtoken"
                     );
-                    auth_pair = (args[idx + 1].as_str(), args[idx + 2].as_str())
+                    let auth_name = arg_it.next().unwrap();
+                    assert!(
+                        !arg_it.peek().is_none(),
+                        "Invalid Authentication info ( --user/-u followed by your github username then your password/authtoken"
+                    );
+                    let auth_pass = arg_it.next().unwrap();
+                    auth_pair = (auth_name, auth_pass);
                 }
                 "--repo" | "-r" => {
                     assert!(
-                        idx + 1 < args.len(),
+                        !arg_it.peek().is_none(),
                         "Invalid Repo Arguments ( --repo/-r followed by the config path"
                     );
                     assert!(
-                        Path::new(&args[idx + 1]).exists(),
+                        Path::new(&arg_it.peek().unwrap()).exists(),
                         "Repo Path does not exist"
                     );
-                    cli_repo_path = args[idx + 1].as_str();
+                    cli_repo_path = arg_it.next().unwrap().as_str();
                 }
-                _ => {}
+                "--help" | "-h" => {
+                    println!("\n{}", CLI_HELP_STR);
+                    process::exit(1);
+                }
+                other => {
+                    println!("Invalid Arguments: {:?}\n{}", other, CLI_HELP_STR);
+                    process::exit(1);
+                }
             }
         }
-        assert!(!(auth_pair.0.is_empty() || auth_pair.1.is_empty()), "Please provide authentication info: -u/--user followed \
-                                                                        by your username then your password/authtoken");
 
         Self::create_from_path(cli_repo_path, auth_pair, config_path)
     }
