@@ -1,5 +1,3 @@
-use crate::config::Config;
-use regex;
 use std::{
     collections::HashMap,
     env,
@@ -10,6 +8,10 @@ use std::{
     str::from_utf8,
     vec,
 };
+
+use crate::config::Config;
+use regex;
+
 
 #[allow(dead_code)]
 
@@ -130,17 +132,19 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
         // we can search for a "Merge pull request #XYZ" style commit
         if !pr_id_pattern.is_match(pr_id_str) {
             // Merge without PR (bad case)
-            commit_title = commit_str[commit_id.len() + 1..].to_string();
-            let merge_pr_pattern =
-                regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
+            commit_title = commit_str[commit_id.len()+1..].to_string();
+            let merge_pr_pattern = regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
 
-            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()) {
+            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()){
                 pr_id = commit_title["merge pull request #".len()..m.end()].to_string();
             } else {
                 println!("Commit with no relation to Pull request found (no PR ID and is not \"Merge pull request style\".\n\
                 Commit: {}\n\
                 If this was not intended please review\n\
                 ##########################################", commit_str);
+                unsafe {
+                    crate::config::EXIT_CODE = 1;
+                }   
                 continue;
             }
         } else {
@@ -176,11 +180,9 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
             // as we don't have any other way of checking
             // using contains instead of normal comparing because of github tags in merges like [manta]
             // in the commit title that appear in the API but not the local git log
-            let pr_title = json_data["title"]
-                .as_str()
-                .expect("could not read PR title from API")
-                .to_string();
-            if pr_title.contains(commit_title.trim()) {
+            let pr_title = json_data["title"].as_str().expect("could not read PR title from API").to_string();
+            if pr_title.contains(commit_title.trim())
+            {
                 // preferably take API PR title as it is more consistent
                 commit_title = pr_title;
             } else {

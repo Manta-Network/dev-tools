@@ -2,6 +2,8 @@ use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path, process};
 
 pub type LabelMap = HashMap<String, String>;
 
+pub static mut EXIT_CODE: i32 = 0;
+
 const CLI_HELP_STR: &str = "#####################################
 Changelog Generator Help\n
 ### Mandatory Arguments:
@@ -84,11 +86,11 @@ impl<'a> Config<'a> {
                 }
                 "--help" | "-h" => {
                     println!("\n{}", CLI_HELP_STR);
-                    process::exit(1);
+                    process::exit(127);
                 }
                 other => {
                     println!("Invalid Arguments: {:?}\n{}", other, CLI_HELP_STR);
-                    process::exit(1);
+                    process::exit(127);
                 }
             }
         }
