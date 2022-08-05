@@ -122,15 +122,34 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
 
         let pr_id_str = splitter.last().unwrap();
 
-        // skip pull requests that have no Pull Request ID
+        let mut pr_id = String::new();
+        let mut commit_title = String::new();
+        // if pr_id_pattern does not match we know there is no PR ID,
+        // those cases are when someone merges without a pull request
+        // we can search for a "Merge pull request #XYZ" style commit
         if !pr_id_pattern.is_match(pr_id_str) {
-            continue;
-        }
-        // need only the number itself (#xyz)
-        let pr_id = pr_id_str[2..pr_id_str.len() - 1].to_string();
+            // Merge without PR (bad case)
+            commit_title = commit_str[commit_id.len()+1..].to_string();
+            let merge_pr_pattern = regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
 
-        let commit_msg =
-            commit_str[commit_id.len() + 1..(commit_str.len() - pr_id_str.len())].to_string();
+            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()){
+                pr_id = commit_title["merge pull request #".len()..m.end()].to_string();
+            } else {
+                println!("Commit with no relation to Pull request found (no PR ID and is not \"Merge pull request style\".\n\
+                Commit: {}\n\
+                If this was not intended please review\n\
+                ##########################################", commit_str);
+            }
+        } else {
+            // Normal case PRs
+            // need only the number itself (#xyz)
+            pr_id = pr_id_str[2..pr_id_str.len() - 1].to_string();
+
+            commit_title =
+                commit_str[commit_id.len() + 1..(commit_str.len() - pr_id_str.len())].to_string();
+
+        }
+
 
         let response = process::Command::new("curl")
             .arg(format!(
@@ -159,7 +178,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
             if !json_data["title"]
                 .as_str()
                 .expect("could not read PR title from API")
-                .contains(commit_msg.trim())
+                .contains(commit_title.trim())
             {
                 continue;
             }
@@ -185,7 +204,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
         }
 
         commits.push(Commit::new(
-            commit_msg,
+            commit_title,
             pr_id,
             cur_commit_labels,
             pull_request_url,
