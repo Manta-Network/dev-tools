@@ -139,6 +139,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
                 Commit: {}\n\
                 If this was not intended please review\n\
                 ##########################################", commit_str);
+                continue;
             }
         } else {
             // Normal case PRs
@@ -147,9 +148,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
 
             commit_title =
                 commit_str[commit_id.len() + 1..(commit_str.len() - pr_id_str.len())].to_string();
-
         }
-
 
         let response = process::Command::new("curl")
             .arg(format!(
@@ -175,11 +174,12 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
             // as we don't have any other way of checking
             // using contains instead of normal comparing because of github tags in merges like [manta]
             // in the commit title that appear in the API but not the local git log
-            if !json_data["title"]
-                .as_str()
-                .expect("could not read PR title from API")
-                .contains(commit_title.trim())
+            let pr_title = json_data["title"].as_str().expect("could not read PR title from API").to_string();
+            if pr_title.contains(commit_title.trim())
             {
+                // preferably take API PR title as it is more consistent
+                commit_title = pr_title;
+            } else {
                 continue;
             }
         }

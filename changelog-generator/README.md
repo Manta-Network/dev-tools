@@ -3,8 +3,12 @@
 ## Rules and Recommendations 
 :warning: **Commits that will get added to the changelog**:
 #### Normal commits from pull request merge
+
 #### "Merge pull request #XYZ.." style commits, the changelog generator
 #### will search for the #XYZ pull request and add that to the changelog
+
+#### Do NOT put things like [MANTA]/[dolphin] and etc, let that be handled by the config either in
+####  prefix/suffix labels as A-manta : MA the resulting prefix/suffix will be [MA] and so on [MACADO]
 
 ### Recommendation: Keep your pull request titles short,concise and well writen
 
