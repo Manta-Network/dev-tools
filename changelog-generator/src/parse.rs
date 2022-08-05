@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     env,
     fs::OpenOptions,
     io::{Read, Seek, SeekFrom, Write},
@@ -11,6 +10,7 @@ use std::{
 
 use crate::config::Config;
 use regex;
+use indexmap::IndexMap;
 
 #[allow(dead_code)]
 
@@ -223,8 +223,8 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
 pub fn prepare_changelog_strings(
     commits: Vec<Commit>,
     config: &Config,
-) -> HashMap<String, Vec<String>> {
-    let mut changelog_data: HashMap<String, Vec<String>> = HashMap::new();
+) -> IndexMap<String, Vec<String>> {
+    let mut changelog_data: IndexMap<String, Vec<String>> = IndexMap::new();
 
     for commit in commits {
         //prefix for dolphin/calamari/manta etc
@@ -238,6 +238,13 @@ pub fn prepare_changelog_strings(
                 None => {}
             };
         }
+        //init table to keep order of config labels
+        for (_,label_str) in &config.labels{
+            if !changelog_data.contains_key(label_str) {
+                changelog_data.insert(label_str.clone(), Vec::new());
+            }
+        }
+        //fill changelog data with prs
         for label in commit.labels.iter() {
             if let Some(label_str) = config.labels.get(label) {
                 if !suffix.is_empty() {
@@ -250,10 +257,6 @@ pub fn prepare_changelog_strings(
                     commit.commit_msg.trim(),
                     suffix
                 );
-
-                if !changelog_data.contains_key(label_str) {
-                    changelog_data.insert(label_str.clone(), Vec::new());
-                }
                 changelog_data.get_mut(label_str).unwrap().push(commit_str);
             }
         }
@@ -334,6 +337,9 @@ pub fn run() {
 
     for (label, prs) in changelog_data {
         //write label name
+        if prs.is_empty() {
+            continue;
+        }
         new_changelog_block.push_str(&format!("### {}\n", label));
         for pr in prs {
             new_changelog_block.push_str(&format!("{}\n", pr));

@@ -46,24 +46,24 @@ Default:
   Only if calling the script from the repo directory
 
 
-### Sample Config.json
-```
-{
-    "repo_path" : "/home/simeonzahariev/work/Manta",
-    "labels": {
-        "L-add": "Added",
-        "L-changed": "Changed",
-        "L-deprecated": "Deprecated",
-        "L-removed": "Removed",
-        "L-fixed": "Fixed",
-        "L-security": "Security"
-    },
-    "suffix_labels": {
-        "A-manta": "MA",
-        "A-calamari": "CA",
-        "A-dolphin": "DO"
-    },
-    "prefix_labels":{},
-    "version_pattern": "v[0-9].[0-9].[0-9]"
-}
+### Sample Config.toml
+```toml
+repo_path = "/home/simeonzahariev/work/Manta"
+version_pattern = "v[0-9]+.[0-9]+.[0-9]+"
+
+[labels]
+L-add = "Added"
+L-changed = "Changed"
+L-deprecated = "Deprecated"
+L-removed = "Removed"
+L-fixed = "Fixed"
+L-security = "Security"
+
+[suffix_labels]
+A-manta = "MA"
+A-calamari = "CA"
+A-dolphin = "DO"
+
+[prefix_labels]
+
 ```
