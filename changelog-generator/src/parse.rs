@@ -73,18 +73,13 @@ pub fn parse_git_log(config: &Config, release_range: (&str, &str)) -> Vec<String
     //add in log range if previous release was found
     if !release_range.1.trim().is_empty() {
         git_log.arg(format!("{}..{}", release_range.0, release_range.1));
-        println!("Generating {}..{}", release_range.0, release_range.1);
     } else {
         git_log.arg(format!("{}..", release_range.0));
-        println!("Generating {}..", release_range.0);
     }
-    
+
     git_log.arg("--oneline");
-    for arg in git_log.get_args(){
-        println!("{:?}", arg);
-    }
+
     let git_log_output = git_log.output().expect("Failed git log call");
-    println!("{:?}",git_log_output.stdout);
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
 
     assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
@@ -311,7 +306,7 @@ pub fn run() {
     // compensate +3 offset back for the "## " string at the start of the version line
     let mut changelog_contents_offset = prev_version_range.start - 3;
     let mut release_range = (prev_version, "");
-    println!("prev: {} | current: {}", prev_version, current_version);
+
     if prev_version == current_version {
         // find the second version found in the changelog to know where to overwrite
         let pp_version_range = version_pattern
