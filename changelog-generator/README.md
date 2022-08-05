@@ -1,5 +1,13 @@
 # A tool to generate a changelog for a release using the old changelog as a basis
 
+## Rules and Recommendations 
+:warning: **Commits that will get added to the changelog**:
+#### Normal commits from pull request merge
+#### "Merge pull request #XYZ.." style commits, the changelog generator
+#### will search for the #XYZ pull request and add that to the changelog
+
+### Recommendation: Keep your pull request titles short,concise and well writen
+
 ## Build
 ```shell
 git clone git@github.com:Manta-Network/dev-tools.git
@@ -12,7 +20,7 @@ cargo b -r
  - Clone manta and make/checkout the release branch.
  - This should be rarely needed as probably the same person who handles the release branch will be generating
 ```shell
-cargo run -- -z -u @github_username @github_password/authtoken
+cargo run -- -u @github_username @github_password/authtoken
 ```
 
 ## Mandatory Args
