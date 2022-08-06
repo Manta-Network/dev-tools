@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     env,
     fs::OpenOptions,
     io::{Read, Seek, SeekFrom, Write},
@@ -11,7 +10,7 @@ use std::{
 
 use crate::config::Config;
 use regex;
-
+use indexmap::IndexMap;
 
 #[allow(dead_code)]
 
@@ -42,7 +41,7 @@ impl Commit {
     }
 }
 
-pub fn get_release_version(config: &Config, pattern: &regex::Regex) -> String {
+pub fn get_branch_name(config: &Config) -> String {
     let mut branch_call = process::Command::new("git");
     if let Some(r_path) = &config.repo_path {
         branch_call.arg("-C").arg(r_path);
@@ -53,15 +52,11 @@ pub fn get_release_version(config: &Config, pattern: &regex::Regex) -> String {
     let branch_call_output = branch_call
         .output()
         .expect("Failed git branch --show-current");
+
     let branch_name = from_utf8(&branch_call_output.stdout)
         .expect("Failed to read branch name")
         .to_string();
-
-    let version_loc = pattern.find(&branch_name).expect(
-        "Could not locate version, check your branch name if it fits the release convention",
-    );
-
-    branch_name[version_loc.range()].to_string()
+    branch_name.replace("\n", "")
 }
 
 // 'config' Config
@@ -76,13 +71,13 @@ pub fn parse_git_log(config: &Config, release_range: (&str, &str)) -> Vec<String
     git_log.arg("log");
 
     //add in log range if previous release was found
-    if !release_range.0.trim().is_empty() {
+    if !release_range.1.trim().is_empty() {
         git_log.arg(format!("{}..{}", release_range.0, release_range.1));
+    } else {
+        git_log.arg(format!("{}..", release_range.0));
     }
 
-    git_log
-        .arg(format!("{}..", release_range.0))
-        .arg("--oneline");
+    git_log.arg("--oneline");
 
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
@@ -132,10 +127,11 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
         // we can search for a "Merge pull request #XYZ" style commit
         if !pr_id_pattern.is_match(pr_id_str) {
             // Merge without PR (bad case)
-            commit_title = commit_str[commit_id.len()+1..].to_string();
-            let merge_pr_pattern = regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
+            commit_title = commit_str[commit_id.len() + 1..].to_string();
+            let merge_pr_pattern =
+                regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
 
-            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()){
+            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()) {
                 pr_id = commit_title["merge pull request #".len()..m.end()].to_string();
             } else {
                 println!("Commit with no relation to Pull request found (no PR ID and is not \"Merge pull request style\".\n\
@@ -144,7 +140,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
                 ##########################################", commit_str);
                 unsafe {
                     crate::config::EXIT_CODE = 1;
-                }   
+                }
                 continue;
             }
         } else {
@@ -180,9 +176,11 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
             // as we don't have any other way of checking
             // using contains instead of normal comparing because of github tags in merges like [manta]
             // in the commit title that appear in the API but not the local git log
-            let pr_title = json_data["title"].as_str().expect("could not read PR title from API").to_string();
-            if pr_title.contains(commit_title.trim())
-            {
+            let pr_title = json_data["title"]
+                .as_str()
+                .expect("could not read PR title from API")
+                .to_string();
+            if pr_title.contains(commit_title.trim()) {
                 // preferably take API PR title as it is more consistent
                 commit_title = pr_title;
             } else {
@@ -225,8 +223,8 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
 pub fn prepare_changelog_strings(
     commits: Vec<Commit>,
     config: &Config,
-) -> HashMap<String, Vec<String>> {
-    let mut changelog_data: HashMap<String, Vec<String>> = HashMap::new();
+) -> IndexMap<String, Vec<String>> {
+    let mut changelog_data: IndexMap<String, Vec<String>> = IndexMap::new();
 
     for commit in commits {
         //prefix for dolphin/calamari/manta etc
@@ -240,6 +238,13 @@ pub fn prepare_changelog_strings(
                 None => {}
             };
         }
+        //init table to keep order of config labels
+        for (_,label_str) in &config.labels{
+            if !changelog_data.contains_key(label_str) {
+                changelog_data.insert(label_str.clone(), Vec::new());
+            }
+        }
+        //fill changelog data with prs
         for label in commit.labels.iter() {
             if let Some(label_str) = config.labels.get(label) {
                 if !suffix.is_empty() {
@@ -252,10 +257,6 @@ pub fn prepare_changelog_strings(
                     commit.commit_msg.trim(),
                     suffix
                 );
-
-                if !changelog_data.contains_key(label_str) {
-                    changelog_data.insert(label_str.clone(), Vec::new());
-                }
                 changelog_data.get_mut(label_str).unwrap().push(commit_str);
             }
         }
@@ -293,11 +294,17 @@ pub fn run() {
     // accommodate +3 to remove the hashtags and -1 at the end to remove the new line
     let prev_version = &changelog_contents[prev_version_range.start..prev_version_range.end];
     // find current version from branch name
-    let current_version = get_release_version(
-        &config,
-        &regex::Regex::new(&config.version_pattern)
-            .expect("Failed constructing changelog version regex"),
-    );
+
+    // get current version and the branch name
+    let branch_name = get_branch_name(&config);
+    let version_loc = regex::Regex::new(&config.version_pattern)
+        .expect("Failed constructing changelog version regex")
+        .find(&branch_name)
+        .expect(
+            "Could not locate version, check your branch name if it fits the release convention",
+        );
+
+    let current_version = branch_name[version_loc.range()].to_string();
 
     // compensate +3 offset back for the "## " string at the start of the version line
     let mut changelog_contents_offset = prev_version_range.start - 3;
@@ -312,7 +319,8 @@ pub fn run() {
 
         // accommodate +3 to remove the hashtags
         let pp_version = &changelog_contents[pp_version_range.start + 3..pp_version_range.end - 1];
-        release_range = (pp_version, prev_version);
+        // use branch name as its more consistent and can work without tags too while its easier to filter tags with workflows
+        release_range = (pp_version, &branch_name);
 
         changelog_contents_offset = pp_version_range.start;
     }
@@ -329,6 +337,9 @@ pub fn run() {
 
     for (label, prs) in changelog_data {
         //write label name
+        if prs.is_empty() {
+            continue;
+        }
         new_changelog_block.push_str(&format!("### {}\n", label));
         for pr in prs {
             new_changelog_block.push_str(&format!("{}\n", pr));

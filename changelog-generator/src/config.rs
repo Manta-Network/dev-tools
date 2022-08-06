@@ -1,6 +1,6 @@
-use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path, process};
+use std::{fs::OpenOptions, io::Read, path::Path, process};
 
-pub type LabelMap = HashMap<String, String>;
+pub type LabelMap = indexmap::IndexMap<String, String>;
 
 pub static mut EXIT_CODE: i32 = 0;
 
@@ -38,7 +38,7 @@ impl<'a> Config<'a> {
 
         let mut cli_repo_path = "";
         let mut auth_pair = ("", "");
-        let mut config_path = "./config.json";
+        let mut config_path = "./config.toml";
 
         let mut arg_it = args[1..].iter().peekable();
         while let Some(arg) = arg_it.next() {
@@ -46,7 +46,7 @@ impl<'a> Config<'a> {
                 "--config" | "-c" => {
                     assert!(
                         !arg_it.peek().is_none(),
-                        "Invalid Config Arguments ( --config/-c followed by the config path )"
+                        "Invalid Config Arguments ( --config/-c followed by the config path to config.toml )"
                     );
 
                     if Path::new(&arg_it.peek().unwrap()).exists() {
@@ -114,8 +114,8 @@ impl<'a> Config<'a> {
             .read_to_string(&mut config_contents)
             .expect("Failed reading config contents");
 
-        let json_data: serde_json::Value =
-            serde_json::from_str(&config_contents).expect("Failed converting config to json");
+        let config_data: toml::Value =
+            toml::from_str(&config_contents).expect("Failed converting config to str");
 
         // If no repo path is given by the arguments, we try to take from config.
         // If no repo path is found we assume the script is being called from the repo itself
@@ -123,7 +123,7 @@ impl<'a> Config<'a> {
         if !cli_repo_path.is_empty() {
             repo_path = Some(cli_repo_path.to_string());
         } else {
-            if let Some(p) = json_data["repo_path"].as_str() {
+            if let Some(p) = config_data["repo_path"].as_str() {
                 repo_path = Some(p.to_string());
             }
         }
@@ -138,10 +138,10 @@ impl<'a> Config<'a> {
         };
 
         // fill everything from the config file
-        Self::labels_fill(&mut new_config.labels, &json_data["labels"]);
-        Self::labels_fill(&mut new_config.suffix_labels, &json_data["suffix_labels"]);
-        Self::labels_fill(&mut new_config.prefix_labels, &json_data["prefix_labels"]);
-        new_config.version_pattern = json_data["version_pattern"]
+        Self::labels_fill(&mut new_config.labels, &config_data["labels"]);
+        Self::labels_fill(&mut new_config.suffix_labels, &config_data["suffix_labels"]);
+        Self::labels_fill(&mut new_config.prefix_labels, &config_data["prefix_labels"]);
+        new_config.version_pattern = config_data["version_pattern"]
             .as_str()
             .unwrap_or("")
             .to_string();
@@ -151,8 +151,11 @@ impl<'a> Config<'a> {
 
     // NOTE: unfortunately we cannot use deserialize as json is unordered format and we want to maintain the order of labels.
     // Some crate with indexmap or BTree may be able to keep it ordered but there are other headaches there
-    fn labels_fill(labelmap: &mut LabelMap, json_label_data: &serde_json::Value) {
-        for (k, v) in json_label_data.as_object().unwrap() {
+    fn labels_fill(labelmap: &mut LabelMap, config_label_data: &toml::Value) {
+        for (k, v) in config_label_data
+            .as_table()
+            .expect("could not convert toml data to table")
+        {
             labelmap.insert(
                 k.to_owned(),
                 v.as_str()
