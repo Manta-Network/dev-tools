@@ -1,0 +1,18 @@
+
+repo_path = "/home/simeonzahariev/work/Manta"
+version_pattern = "v[0-9]+.[0-9]+.[0-9]+"
+
+[labels]
+L-add = "Added"
+L-changed = "Changed"
+L-deprecated = "Deprecated"
+L-removed = "Removed"
+L-fixed = "Fixed"
+L-security = "Security"
+
+[suffix_labels]
+A-manta = "MA"
+A-calamari = "CA"
+A-dolphin = "DO"
+
+[prefix_labels]
