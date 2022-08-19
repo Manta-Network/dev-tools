@@ -48,7 +48,7 @@ Default:
 
 ### Sample Config.toml
 ```toml
-# Optional as there are CLI arguments too, defaults to same directory
+# Optional as there are CLI arguments too, defaults to the current working directory
 # repo_path = "/home/simeonzahariev/work/Manta"
 
 # Mandatory 
