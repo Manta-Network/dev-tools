@@ -123,7 +123,7 @@ impl<'a> Config<'a> {
         if !cli_repo_path.is_empty() {
             repo_path = Some(cli_repo_path.to_string());
         } else {
-            if let Some(p) = config_data["repo_path"].as_str() {
+            if let Some(p) = config_data.get("repo_path") {
                 repo_path = Some(p.to_string());
             }
         }
