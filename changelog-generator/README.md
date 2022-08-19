@@ -48,11 +48,14 @@ Default:
 
 ### Sample Config.toml
 ```toml
-repo_path = "/home/simeonzahariev/work/Manta"
+# Optional as there are CLI arguments too, defaults to the current working directory
+# repo_path = "/home/simeonzahariev/work/Manta"
+
+# Mandatory 
 version_pattern = "v[0-9]+.[0-9]+.[0-9]+"
 
 [labels]
-L-add = "Added"
+L-added = "Added"
 L-changed = "Changed"
 L-deprecated = "Deprecated"
 L-removed = "Removed"
