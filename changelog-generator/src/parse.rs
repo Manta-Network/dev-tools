@@ -428,7 +428,7 @@ pub fn run() {
         &config,
     );
 
-    let mut new_changelog_block = format!("# CHANGELOG \n\n## {}\n", current_version);
+    let mut new_changelog_block = format!("# CHANGELOG\n\n## {}\n", current_version);
 
     for (label, prs) in changelog_data {
         //write label name
