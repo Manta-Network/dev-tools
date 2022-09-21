@@ -354,10 +354,10 @@ pub fn prepare_changelog_strings(
         for label in commit.labels.iter() {
             if let Some(label_str) = config.labels.get(label) {
                 if !suffix.is_empty() {
-                    suffix = format!("[{}]", suffix);
+                    suffix = format!(" [{}]", suffix);
                 }
                 let commit_str = format!(
-                    r"-[\#{}]({}) {} {}",
+                    r"-[\#{}]({}) {}{}",
                     commit.pr_id,
                     commit.relative_pr_url,
                     commit.commit_msg.trim(),
@@ -454,6 +454,7 @@ pub fn run() {
         }
         new_changelog_block.push_str("\n");
     }
+    println!("{}",new_changelog_block);
     //remove last trailing new line
     //new_changelog_block = new_changelog_block[..new_changelog_block.len()].to_string();
     // add in previous changelog data
@@ -462,6 +463,7 @@ pub fn run() {
     // go back to start of file and overwrite
     // using overwriting over whole contents as that will let us
     // rewrite previous releases too if they get yanked(aka re-release)
+    
     changelog_handle.seek(SeekFrom::Start(0)).unwrap();
     changelog_handle
         .write_all(new_changelog_block.as_bytes())
