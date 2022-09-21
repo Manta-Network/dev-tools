@@ -1,8 +1,6 @@
 use std::{
     env,
-    fs::OpenOptions,
-    io::{Read, Seek, SeekFrom, Write},
-    os::unix::process::CommandExt,
+    fs,
     path::Path,
     process,
     str::from_utf8,
@@ -375,18 +373,7 @@ pub fn run() {
     let config = Config::new(&args);
     let changelog_path = make_changelog_path(&config);
 
-    //load changelog and collect information from it for the git log
-    let mut changelog_handle = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&changelog_path)
-        .expect(&format!("Failed to open {}", &changelog_path));
-
-    let mut changelog_contents = String::new();
-    changelog_handle
-        .read_to_string(&mut changelog_contents)
-        .expect("Failed reading changelog contents");
+    let changelog_contents = fs::read_to_string(&changelog_path).expect("Failed reading changelog contents");
 
     // find previous version in changelog use ## and /n to make it more concrete to not mess up if there is
     // a version string somewhere in the commit messages
@@ -454,7 +441,6 @@ pub fn run() {
         }
         new_changelog_block.push_str("\n");
     }
-    println!("{}",new_changelog_block);
     //remove last trailing new line
     //new_changelog_block = new_changelog_block[..new_changelog_block.len()].to_string();
     // add in previous changelog data
@@ -463,9 +449,6 @@ pub fn run() {
     // go back to start of file and overwrite
     // using overwriting over whole contents as that will let us
     // rewrite previous releases too if they get yanked(aka re-release)
-    
-    changelog_handle.seek(SeekFrom::Start(0)).unwrap();
-    changelog_handle
-        .write_all(new_changelog_block.as_bytes())
-        .expect("Failed writing new changelog");
+    fs::write(&changelog_path, new_changelog_block).expect("Failed writing new changelog");
+
 }
