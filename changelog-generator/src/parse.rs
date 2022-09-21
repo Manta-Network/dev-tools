@@ -139,7 +139,6 @@ pub fn make_changelog_path(config: &Config) -> String {
 // branch is contained in the master branch
 // 'to_commit' collect from start to to_commit range, (to_commit, "") as git log is reverse order
 pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String> {
-
     //get branch name to reverse checkout changes
     let r_branch = get_branch_name(config);
     // master checkout
@@ -173,7 +172,6 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
     master_commits.reverse();
     let mut master_commit_ids: Vec<String> = vec![];
     for master_commit_str in master_commits.iter() {
-
         master_commit_ids.push(
             master_commit_str
                 .split_whitespace()
@@ -192,7 +190,7 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
     git_checkout_back
         .output()
         .expect("Failed manta master branch checkout back command");
-    
+
     master_commit_ids
 }
 
@@ -202,7 +200,7 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
 // calls to the API without getting timed out or limited in the number of calls per hour
 pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Config) -> Vec<Commit> {
     let mut commits: Vec<Commit> = vec![];
-    
+
     // get master commit relative to this release commits
     let end_commit_id = input[0]
         .split_whitespace()
