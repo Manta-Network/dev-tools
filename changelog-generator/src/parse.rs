@@ -1,16 +1,15 @@
 use std::{
     env,
-    fs::OpenOptions,
-    io::{Read, Seek, SeekFrom, Write},
+    fs,
     path::Path,
     process,
     str::from_utf8,
     vec,
 };
 
-use crate::config::Config;
-use regex;
+use crate::config::{self, Config};
 use indexmap::IndexMap;
+use regex;
 
 #[allow(dead_code)]
 
@@ -60,8 +59,35 @@ pub fn get_branch_name(config: &Config) -> String {
 }
 
 // 'config' Config
+// 'n' number of commits
+pub fn parse_git_log(config: &Config, n: usize) -> Vec<String> {
+    //git log
+    let mut git_log = process::Command::new("git");
+    // check if
+    if let Some(r_path) = &config.repo_path {
+        git_log.arg("-C").arg(r_path);
+    };
+    git_log.arg("log");
+
+    git_log.arg("-n");
+    git_log.arg(n.to_string());
+
+    git_log.arg("--oneline");
+
+    let git_log_output = git_log.output().expect("Failed git log call");
+    let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
+
+    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
+
+    let spl = git_log_str.split("\n");
+    let commit_data: Vec<String> = spl.map(|s| s.into()).collect();
+
+    commit_data
+}
+
+// 'config' Config
 // 'release_range' a range of 2 versions ex. v3.2.0 , v3.2.1
-pub fn parse_git_log(config: &Config, release_range: (&str, &str)) -> Vec<String> {
+pub fn parse_git_log_range(config: &Config, release_range: (&str, &str)) -> Vec<String> {
     //git log
     let mut git_log = process::Command::new("git");
     // check if
@@ -105,13 +131,70 @@ pub fn make_changelog_path(config: &Config) -> String {
     changelog_path
 }
 
+// Used to collect commit IDs to compare if a commit in the release
+// branch is contained in the master branch
+// 'to_commit' collect from start to to_commit range, (to_commit, "") as git log is reverse order
+pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String> {
+    //git log
+    let mut git_fetch = process::Command::new("git");
+    if let Some(r_path) = &config.repo_path {
+        git_fetch.arg("-C").arg(r_path);
+    };
+    git_fetch.arg("fetch");
+    git_fetch.arg("origin");
+    git_fetch.output().expect("Failed git fetch origin call");
+
+    let mut git_log = process::Command::new("git");
+    if let Some(r_path) = &config.repo_path {
+        git_log.arg("-C").arg(r_path);
+    };
+    git_log.arg("log");
+
+    git_log.arg(format!("{}..origin/manta", to_commit));
+    
+    git_log.arg("--oneline");
+
+    let git_log_output = git_log.output().expect("Failed git log call");
+    let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
+    println!("{}",git_log_str);
+    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
+
+    let spl = git_log_str.split("\n");
+    let mut commit_data: Vec<String> = spl.map(|s| s.into()).collect();
+    //remove last string as its going to be empty
+    commit_data.pop();
+    //reverse order so commits are in proper chronological order
+    commit_data.reverse();
+    let mut master_commit_ids: Vec<String> = vec![];
+    for master_commit_str in commit_data.iter() {
+        master_commit_ids.push(
+            master_commit_str
+                .split_whitespace()
+                .next()
+                .expect("Could not read commit_id from master git log!")
+                .to_string(),
+        )
+    }
+
+    master_commit_ids
+}
+
 // parse the git log and collect the commit data based on it with github API calls
 // `input` is a vector of every line from gitlog
 // 'login_info' is the login info of the caller (username:pass/authtoken) needed to make
 // calls to the API without getting timed out or limited in the number of calls per hour
-pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit> {
+pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Config) -> Vec<Commit> {
     let mut commits: Vec<Commit> = vec![];
+
+    // get master commit relative to this release commits
+    let end_commit_id = input[0]
+        .split_whitespace()
+        .next()
+        .expect("Could not get start commit");
+    let master_commit_ids = collect_master_commit_ids(config, end_commit_id);
+
     let pr_id_pattern = regex::Regex::new(r"(#[0-9]+)").expect("Invalid regex");
+
     for commit_str in input.iter() {
         let mut splitter = commit_str.split_whitespace();
 
@@ -134,12 +217,20 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str)) -> Vec<Commit
             if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()) {
                 pr_id = commit_title["merge pull request #".len()..m.end()].to_string();
             } else {
-                println!("Commit with no relation to Pull request found (no PR ID and is not \"Merge pull request style\".\n\
-                Commit: {}\n\
-                If this was not intended please review\n\
-                ##########################################", commit_str);
-                unsafe {
-                    crate::config::EXIT_CODE = 1;
+                if master_commit_ids.contains(&commit_id.to_string()) {
+                    println!("ERROR: Commit with no relation to Pull request found in Release Branch AND in Master Manta \
+                    (no PR ID and is not \"Merge pull request style\".\n\
+                    Commit: {}\n\
+                    Master branch should not contain commits without PRS or the given format to relate to a PR!\n\
+                    ##########################################", commit_str);
+                    unsafe {
+                        crate::config::EXIT_CODE = 1;
+                    }
+                } else {
+                    println!("WARNING: Commit with no relation to Pull request found in Release Branch (no PR ID and is not \"Merge pull request style\".\n\
+                    Commit: {}\n\
+                    If this was not intended please review\n\
+                    ##########################################", commit_str);
                 }
                 continue;
             }
@@ -239,7 +330,7 @@ pub fn prepare_changelog_strings(
             };
         }
         //init table to keep order of config labels
-        for (_,label_str) in &config.labels{
+        for (_, label_str) in &config.labels {
             if !changelog_data.contains_key(label_str) {
                 changelog_data.insert(label_str.clone(), Vec::new());
             }
@@ -248,10 +339,10 @@ pub fn prepare_changelog_strings(
         for label in commit.labels.iter() {
             if let Some(label_str) = config.labels.get(label) {
                 if !suffix.is_empty() {
-                    suffix = format!("[{}]", suffix);
+                    suffix = format!(" [{}]", suffix);
                 }
                 let commit_str = format!(
-                    r"-[\#{}]({}) {} {}",
+                    r"-[\#{}]({}) {}{}",
                     commit.pr_id,
                     commit.relative_pr_url,
                     commit.commit_msg.trim(),
@@ -269,18 +360,7 @@ pub fn run() {
     let config = Config::new(&args);
     let changelog_path = make_changelog_path(&config);
 
-    //load changelog and collect information from it for the git log
-    let mut changelog_handle = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&changelog_path)
-        .expect(&format!("Failed to open {}", &changelog_path));
-
-    let mut changelog_contents = String::new();
-    changelog_handle
-        .read_to_string(&mut changelog_contents)
-        .expect("Failed reading changelog contents");
+    let changelog_contents = fs::read_to_string(&changelog_path).expect("Failed reading changelog contents");
 
     // find previous version in changelog use ## and /n to make it more concrete to not mess up if there is
     // a version string somewhere in the commit messages
@@ -325,15 +405,17 @@ pub fn run() {
         changelog_contents_offset = pp_version_range.start;
     }
 
-    let mut commit_data = parse_git_log(&config, release_range);
+    let mut commit_data = parse_git_log_range(&config, release_range);
     //remove last string as its going to be empty
     commit_data.pop();
     //reverse order so commits are in proper chronological order
     commit_data.reverse();
-    let changelog_data =
-        prepare_changelog_strings(parse_commits(commit_data, config.auth_pair), &config);
+    let changelog_data = prepare_changelog_strings(
+        parse_commits(commit_data, config.auth_pair, &config),
+        &config,
+    );
 
-    let mut new_changelog_block = format!("# CHANGELOG \n\n## {}\n", current_version);
+    let mut new_changelog_block = format!("# CHANGELOG\n\n## {}\n", current_version);
 
     for (label, prs) in changelog_data {
         //write label name
@@ -354,8 +436,6 @@ pub fn run() {
     // go back to start of file and overwrite
     // using overwriting over whole contents as that will let us
     // rewrite previous releases too if they get yanked(aka re-release)
-    changelog_handle.seek(SeekFrom::Start(0)).unwrap();
-    changelog_handle
-        .write_all(new_changelog_block.as_bytes())
-        .expect("Failed writing new changelog");
+    fs::write(&changelog_path, new_changelog_block).expect("Failed writing new changelog");
+
 }

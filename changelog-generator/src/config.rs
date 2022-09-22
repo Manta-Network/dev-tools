@@ -94,7 +94,6 @@ impl<'a> Config<'a> {
                 }
             }
         }
-
         Self::create_from_path(cli_repo_path, auth_pair, config_path)
     }
 
@@ -124,7 +123,11 @@ impl<'a> Config<'a> {
             repo_path = Some(cli_repo_path.to_string());
         } else {
             if let Some(p) = config_data.get("repo_path") {
-                repo_path = Some(p.to_string());
+                repo_path = Some(
+                    p.as_str()
+                        .expect("could not read repo_path from config file")
+                        .to_string(),
+                );
             }
         }
 
