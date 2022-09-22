@@ -137,39 +137,38 @@ pub fn make_changelog_path(config: &Config) -> String {
 // branch is contained in the master branch
 // 'to_commit' collect from start to to_commit range, (to_commit, "") as git log is reverse order
 pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String> {
-    //get branch name to reverse checkout changes
-    let r_branch = get_branch_name(config);
-    // master checkout
-    let mut git_checkout = process::Command::new("git");
-    if let Some(r_path) = &config.repo_path {
-        git_checkout.arg("-C").arg(r_path);
-    };
-    git_checkout.arg("checkout");
-    git_checkout.arg("manta");
-
-    git_checkout
-        .output()
-        .expect("Failed manta master branch checkout");
-
-    // fetch origin
+    //git log
     let mut git_fetch = process::Command::new("git");
     if let Some(r_path) = &config.repo_path {
         git_fetch.arg("-C").arg(r_path);
     };
     git_fetch.arg("fetch");
-    git_fetch.arg("origin");
+    git_fetch.arg("origin/manta");
+    git_fetch.output().expect("Failed git fetch origin/manta call");
 
-    git_checkout
-        .output()
-        .expect("Failed manta master branch checkout");
+    let mut git_log = process::Command::new("git");
+    if let Some(r_path) = &config.repo_path {
+        git_log.arg("-C").arg(r_path);
+    };
+    git_log.arg("log");
 
-    let mut master_commits = parse_git_log_range(config, (to_commit, ""));
+    git_log.arg(format!("{}..origin/manta", to_commit));
+    
+    git_log.arg("--oneline");
+
+    let git_log_output = git_log.output().expect("Failed git log call");
+    let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
+    println!("{}",git_log_str);
+    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
+
+    let spl = git_log_str.split("\n");
+    let mut commit_data: Vec<String> = spl.map(|s| s.into()).collect();
     //remove last string as its going to be empty
-    master_commits.pop();
+    commit_data.pop();
     //reverse order so commits are in proper chronological order
-    master_commits.reverse();
+    commit_data.reverse();
     let mut master_commit_ids: Vec<String> = vec![];
-    for master_commit_str in master_commits.iter() {
+    for master_commit_str in commit_data.iter() {
         master_commit_ids.push(
             master_commit_str
                 .split_whitespace()
@@ -178,16 +177,6 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
                 .to_string(),
         )
     }
-    let mut git_checkout_back = process::Command::new("git");
-    if let Some(r_path) = &config.repo_path {
-        git_checkout_back.arg("-C").arg(r_path);
-    };
-    git_checkout_back.arg("checkout");
-    git_checkout_back.arg(r_branch);
-
-    git_checkout_back
-        .output()
-        .expect("Failed manta master branch checkout back command");
 
     master_commit_ids
 }
