@@ -131,8 +131,6 @@ pub fn make_changelog_path(config: &Config) -> String {
     changelog_path
 }
 
-// checksout master, collects commits ids then checks back to the original branch
-// changing nothing
 // Used to collect commit IDs to compare if a commit in the release
 // branch is contained in the master branch
 // 'to_commit' collect from start to to_commit range, (to_commit, "") as git log is reverse order
@@ -143,8 +141,8 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
         git_fetch.arg("-C").arg(r_path);
     };
     git_fetch.arg("fetch");
-    git_fetch.arg("origin/manta");
-    git_fetch.output().expect("Failed git fetch origin/manta call");
+    git_fetch.arg("origin");
+    git_fetch.output().expect("Failed git fetch origin call");
 
     let mut git_log = process::Command::new("git");
     if let Some(r_path) = &config.repo_path {
