@@ -342,7 +342,7 @@ pub fn prepare_changelog_strings(
                     suffix = format!(" [{}]", suffix);
                 }
                 let commit_str = format!(
-                    r"-[\#{}]({}) {}{}",
+                    r"- [\#{}]({}) {}{}",
                     commit.pr_id,
                     commit.relative_pr_url,
                     commit.commit_msg.trim(),
