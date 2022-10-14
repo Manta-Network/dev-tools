@@ -1,11 +1,4 @@
-use std::{
-    env,
-    fs,
-    path::Path,
-    process,
-    str::from_utf8,
-    vec,
-};
+use std::{env, fs, path::Path, process, str::from_utf8, vec};
 
 use crate::config::Config;
 use crate::git_util::*;
@@ -47,7 +40,7 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
     git_log.arg("log");
 
     git_log.arg(format!("{}..origin/manta", to_commit));
-    
+
     git_log.arg("--oneline");
 
     let git_log_output = git_log.output().expect("Failed git log call");
@@ -246,7 +239,8 @@ pub fn run() {
     let config = Config::new(&args);
     let changelog_path = make_changelog_path(&config);
 
-    let changelog_contents = fs::read_to_string(&changelog_path).expect("Failed reading changelog contents");
+    let changelog_contents =
+        fs::read_to_string(&changelog_path).expect("Failed reading changelog contents");
 
     // find previous version in changelog use ## and /n to make it more concrete to not mess up if there is
     // a version string somewhere in the commit messages
@@ -327,5 +321,4 @@ pub fn run() {
     // using overwriting over whole contents as that will let us
     // rewrite previous releases too if they get yanked(aka re-release)
     fs::write(&changelog_path, new_changelog_block).expect("Failed writing new changelog");
-
 }

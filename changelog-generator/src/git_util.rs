@@ -1,9 +1,5 @@
-
-use std::{
-    process,
-    str::from_utf8,
-};
 use crate::config::Config;
+use std::{process, str::from_utf8};
 // 'commit_msg' Message/Title of the pull request itself
 // 'pr_id' Pull Request ID
 // 'labels' an array of all the labels in the pull request
@@ -36,7 +32,7 @@ pub fn get_branch_name(config: &Config) -> String {
     if let Some(r_path) = &config.repo_path {
         branch_call.arg("-C").arg(r_path);
     };
-    
+
     branch_call.arg("branch").arg("--show-current");
 
     let branch_call_output = branch_call
@@ -54,12 +50,10 @@ pub fn get_tag_name(config: &Config) -> String {
     if let Some(r_path) = &config.repo_path {
         tag_call.arg("-C").arg(r_path);
     };
-    
+
     tag_call.arg("describe").arg("--tag");
 
-    let branch_call_output = tag_call
-        .output()
-        .expect("Failed git branch --show-current");
+    let branch_call_output = tag_call.output().expect("Failed git branch --show-current");
 
     let tag_name = from_utf8(&branch_call_output.stdout)
         .expect("Failed to read branch name")
