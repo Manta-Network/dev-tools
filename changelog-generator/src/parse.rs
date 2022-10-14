@@ -7,114 +7,10 @@ use std::{
     vec,
 };
 
-use crate::config::{self, Config};
+use crate::config::Config;
+use crate::git_util::*;
 use indexmap::IndexMap;
 use regex;
-
-#[allow(dead_code)]
-
-// 'commit_msg' Message/Title of the pull request itself
-// 'pr_id' Pull Request ID
-// 'labels' an array of all the labels in the pull request
-// 'relative_pr_url' url of the pull request, used to make the links in the changelog
-pub struct Commit {
-    commit_msg: String,
-    pr_id: String, // keeping it as string as anyway will be used only in string formatting
-    pub labels: Vec<String>,
-    relative_pr_url: String,
-}
-
-impl Commit {
-    pub fn new(
-        commit_msg: String,
-        pr_id: String,
-        labels: Vec<String>,
-        relative_pr_url: String,
-    ) -> Self {
-        Self {
-            commit_msg,
-            pr_id,
-            labels,
-            relative_pr_url,
-        }
-    }
-}
-
-pub fn get_branch_name(config: &Config) -> String {
-    let mut branch_call = process::Command::new("git");
-    if let Some(r_path) = &config.repo_path {
-        branch_call.arg("-C").arg(r_path);
-    };
-
-    branch_call.arg("branch").arg("--show-current");
-
-    let branch_call_output = branch_call
-        .output()
-        .expect("Failed git branch --show-current");
-
-    let branch_name = from_utf8(&branch_call_output.stdout)
-        .expect("Failed to read branch name")
-        .to_string();
-    branch_name.replace("\n", "")
-}
-
-// 'config' Config
-// 'n' number of commits
-pub fn parse_git_log(config: &Config, n: usize) -> Vec<String> {
-    //git log
-    let mut git_log = process::Command::new("git");
-    // check if
-    if let Some(r_path) = &config.repo_path {
-        git_log.arg("-C").arg(r_path);
-    };
-    git_log.arg("log");
-
-    git_log.arg("-n");
-    git_log.arg(n.to_string());
-
-    git_log.arg("--oneline");
-
-    let git_log_output = git_log.output().expect("Failed git log call");
-    let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
-
-    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
-
-    let spl = git_log_str.split("\n");
-    let commit_data: Vec<String> = spl.map(|s| s.into()).collect();
-
-    commit_data
-}
-
-// 'config' Config
-// 'release_range' a range of 2 versions ex. v3.2.0 , v3.2.1
-pub fn parse_git_log_range(config: &Config, release_range: (&str, &str)) -> Vec<String> {
-    //git log
-    let mut git_log = process::Command::new("git");
-    // check if
-    if let Some(r_path) = &config.repo_path {
-        git_log.arg("-C").arg(r_path);
-    };
-    git_log.arg("log");
-
-    //add in log range if previous release was found
-    if !release_range.1.trim().is_empty() {
-        git_log.arg(format!("{}..{}", release_range.0, release_range.1));
-    } else {
-        git_log.arg(format!("{}..", release_range.0));
-    }
-
-    git_log.arg("--oneline");
-
-    let git_log_output = git_log.output().expect("Failed git log call");
-    let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
-
-    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
-
-    let spl = git_log_str.split("\n");
-    let commit_data: Vec<String> = spl.map(|s| s.into()).collect();
-
-    commit_data
-}
 
 pub fn make_changelog_path(config: &Config) -> String {
     let changelog_path = match &config.repo_path {
@@ -156,7 +52,6 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
 
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
-    println!("{}",git_log_str);
     assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
 
     let spl = git_log_str.split("\n");
@@ -204,18 +99,18 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Conf
         let pr_id_str = splitter.last().unwrap();
 
         let mut pr_id = String::new();
-        let mut commit_title = String::new();
+        let mut pr_title = String::new();
         // if pr_id_pattern does not match we know there is no PR ID,
         // those cases are when someone merges without a pull request
         // we can search for a "Merge pull request #XYZ" style commit
         if !pr_id_pattern.is_match(pr_id_str) {
             // Merge without PR (bad case)
-            commit_title = commit_str[commit_id.len() + 1..].to_string();
+            let commit_msg = commit_str[commit_id.len() + 1..].to_string();
             let merge_pr_pattern =
                 regex::Regex::new(r"merge pull request #[0-9]+").expect("Invalid merge regex");
 
-            if let Some(m) = merge_pr_pattern.find(&commit_title.to_lowercase()) {
-                pr_id = commit_title["merge pull request #".len()..m.end()].to_string();
+            if let Some(m) = merge_pr_pattern.find(&commit_msg.to_lowercase()) {
+                pr_id = commit_msg["merge pull request #".len()..m.end()].to_string();
             } else {
                 if master_commit_ids.contains(&commit_id.to_string()) {
                     println!("ERROR: Commit with no relation to Pull request found in Release Branch AND in Master Manta \
@@ -238,9 +133,6 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Conf
             // Normal case PRs
             // need only the number itself (#xyz)
             pr_id = pr_id_str[2..pr_id_str.len() - 1].to_string();
-
-            commit_title =
-                commit_str[commit_id.len() + 1..(commit_str.len() - pr_id_str.len())].to_string();
         }
 
         let response = process::Command::new("curl")
@@ -267,16 +159,10 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Conf
             // as we don't have any other way of checking
             // using contains instead of normal comparing because of github tags in merges like [manta]
             // in the commit title that appear in the API but not the local git log
-            let pr_title = json_data["title"]
+            pr_title = json_data["title"]
                 .as_str()
                 .expect("could not read PR title from API")
                 .to_string();
-            if pr_title.contains(commit_title.trim()) {
-                // preferably take API PR title as it is more consistent
-                commit_title = pr_title;
-            } else {
-                continue;
-            }
         }
 
         let pull_request_url = json_data["html_url"]
@@ -299,7 +185,7 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Conf
         }
 
         commits.push(Commit::new(
-            commit_title,
+            pr_title,
             pr_id,
             cur_commit_labels,
             pull_request_url,
@@ -345,7 +231,7 @@ pub fn prepare_changelog_strings(
                     r"- [\#{}]({}) {}{}",
                     commit.pr_id,
                     commit.relative_pr_url,
-                    commit.commit_msg.trim(),
+                    commit.merged_pr_title.trim(),
                     suffix
                 );
                 changelog_data.get_mut(label_str).unwrap().push(commit_str);
@@ -376,7 +262,11 @@ pub fn run() {
     // find current version from branch name
 
     // get current version and the branch name
-    let branch_name = get_branch_name(&config);
+    let mut branch_name = get_branch_name(&config);
+    // branch name may be empty on tag checkout because of the detached HEAD so we need to describe the tag
+    if branch_name.is_empty() {
+        branch_name = get_tag_name(&config);
+    }
     let version_loc = regex::Regex::new(&config.version_pattern)
         .expect("Failed constructing changelog version regex")
         .find(&branch_name)
