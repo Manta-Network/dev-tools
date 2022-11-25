@@ -11,7 +11,7 @@ async function createPromiseApi(nodeAddress: any) {
 }
 
 async function main() {
-    let nodeAddress = "ws://127.0.0.1:9801";
+    let nodeAddress = "wss://c1.calamari.moonsea.systems";
     let precomputedMintsFile = "./precomputed_mints_v3";
     const api = await createPromiseApi(nodeAddress);
 
