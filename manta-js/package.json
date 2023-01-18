@@ -5,14 +5,8 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "type": "module",
   "dependencies": {
-    "@polkadot/api": "^9.6.2",
-    "@polkadot/keyring": "^10.1.12",
-    "@polkadot/types": "^9.6.2",
-    "@polkadot/util": "^10.1.12",
-    "@polkadot/util-crypto": "^10.1.12",
-    "@polkadot/wasm-bridge": "^6.3.1",
-    "@polkadot/wasm-crypto": "^6.3.1",
     "manta.js": "file:../../sdk/manta-js/package",
     "minimist": "^1.2.5"
   }
