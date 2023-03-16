@@ -43,11 +43,13 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
 
     git_log.arg("--oneline");
 
+    log::info!("collect_master_commit_ids Issuing git command {:?}", git_log);
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
     // NOTE: log being empty is not an error here if `to_commit` is manta HEAD
     // TODO: Check explicitly that to_commit SHA is identical to `origin/manta`
     if git_log_str.is_empty(){
+        log::warn!("collect_master_commit_ids git log empty!");
         return vec![];
     }
     let spl = git_log_str.split("\n");
@@ -94,8 +96,8 @@ pub fn parse_commits(input: Vec<String>, login_info: (&str, &str), config: &Conf
 
         let pr_id_str = splitter.last().unwrap();
 
-        let mut pr_id = String::new();
-        let mut pr_title = String::new();
+        let pr_id : String;
+        let pr_title : String;
         // if pr_id_pattern does not match we know there is no PR ID,
         // those cases are when someone merges without a pull request
         // we can search for a "Merge pull request #XYZ" style commit
@@ -250,8 +252,8 @@ pub fn run() {
     let version_pattern = regex::Regex::new(&format!("## {}\n", &config.version_pattern))
         .expect("Failed constructing changelog version regex");
     let prev_version_range = match version_pattern.find(&changelog_contents) {
-        Some(m) => (m.start() + 3..m.end() - 1),
-        None => (0..0),
+        Some(m) => m.start() + 3..m.end() - 1,
+        None => 0..0,
     };
 
     // accommodate +3 to remove the hashtags and -1 at the end to remove the new line
@@ -291,9 +293,11 @@ pub fn run() {
 
         changelog_contents_offset = pp_version_range.start;
     }
+    log::info!("Running on release range {:?}", release_range);
 
     let mut commit_data = parse_git_log_range(&config, release_range);
     //remove last string as its going to be empty
+    log::debug!("Got {:?}", commit_data);
     commit_data.pop();
     //reverse order so commits are in proper chronological order
     commit_data.reverse();
