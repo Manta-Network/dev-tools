@@ -45,8 +45,11 @@ pub fn collect_master_commit_ids(config: &Config, to_commit: &str) -> Vec<String
 
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
-    assert!(!git_log_str.is_empty(), "Git log empty! Make sure the script is ran from the base repo directory or check repository path arg correctness");
-
+    // NOTE: log being empty is not an error here if `to_commit` is manta HEAD
+    // TODO: Check explicitly that to_commit SHA is identical to `origin/manta`
+    if git_log_str.is_empty(){
+        return vec![];
+    }
     let spl = git_log_str.split("\n");
     let mut commit_data: Vec<String> = spl.map(|s| s.into()).collect();
     //remove last string as its going to be empty
