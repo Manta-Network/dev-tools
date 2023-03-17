@@ -1,5 +1,6 @@
 use crate::config::Config;
 use std::{process, str::from_utf8};
+use log;
 // 'commit_msg' Message/Title of the pull request itself
 // 'pr_id' Pull Request ID
 // 'labels' an array of all the labels in the pull request
@@ -77,6 +78,7 @@ pub fn parse_git_log(config: &Config, n: usize) -> Vec<String> {
 
     git_log.arg("--oneline");
 
+    log::info!("parse_git_log Issuing git command {:?}",git_log);
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
 
@@ -108,6 +110,7 @@ pub fn parse_git_log_range(config: &Config, release_range: (&str, &str)) -> Vec<
 
     git_log.arg("--oneline");
 
+    log::info!("parse_git_log_range Issuing git command {:?}",git_log);
     let git_log_output = git_log.output().expect("Failed git log call");
     let git_log_str = from_utf8(&git_log_output.stdout).unwrap();
 
