@@ -11,3 +11,5 @@ serde_json = { version = "1.0.83", features = ["preserve_order"] }
 indexmap = "1.9.1"
 toml = "0.5.9"
 regex = "1.6.0"
+log = "*"
+env_logger = "*"
