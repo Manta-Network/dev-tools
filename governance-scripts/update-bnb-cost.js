@@ -17,7 +17,7 @@ async function main() {
     const nodeAddress = 'wss://a1.calamari.systems';
     const api = await createPromiseApi(nodeAddress);
     const aliceKey = keyring.addFromMnemonic("bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice");
-    const newUnitsPerSec = "80590567679958737629347861126334";
+    const newUnitsPerSec = "80590567679958737";
     const bnbAssetId = 21;
     const updateUnitsSecTx = await api.tx.assetManager.setUnitsPerSecond(bnbAssetId, newUnitsPerSec);
     const encodedCallData = updateUnitsSecTx.method.toHex();
