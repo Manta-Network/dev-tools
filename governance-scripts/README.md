@@ -8,4 +8,4 @@ yarn
 ```
 
 ## Configure
-Change the mnemonic in any of the scripts to a real account and run them.
+Update the mnemonic and the node endpoint in any of the scripts to a real account and endpoint, before running them.
