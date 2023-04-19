@@ -100,14 +100,14 @@ async function main() {
         v2: xcmV2,
     });
 
-    const dest = api.createType<XcmVersionedMultiLocation>("XcmVersionedMultiLocation", {
-        v1: api.createType("XcmV1MultiLocation", {
-            parents: 1,
-            interior: api.createType("XcmV1MultilocationJunctions", {
-                here: true,
-            }),
-        }),
-    });
+    const dest = {
+      "V1": {
+        "parents": 1,
+        "interior": {
+          "Here": null
+        }
+      }
+    };
 
     const sendXcmTx = await api.tx.polkadotXcm.send(dest, message);
     console.log(sendXcmTx);
