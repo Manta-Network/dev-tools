@@ -2,8 +2,8 @@
 
 ## Build
 ```shell
-git clone git@github.com:Manta-Network/Dev-Tools.git
-cd Dev-Tools/governance-scripts
+git clone git@github.com:Manta-Network/dev-tools.git
+cd dev-tools/governance-scripts
 yarn
 ```
 
