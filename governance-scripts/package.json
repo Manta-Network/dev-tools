@@ -1,0 +1,20 @@
+{
+    "name": "runtime-upgrade-test",
+    "version": "1.0.0",
+    "main": "update-bnb-cost.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "yarn build && polkadot-dev-build-ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+      "@polkadot/api": "^8.11.3",
+      "@polkadot/types": "^8.11.3",
+      "minimist": "^1.2.5"
+    }
+  }
+  
+  
+  
