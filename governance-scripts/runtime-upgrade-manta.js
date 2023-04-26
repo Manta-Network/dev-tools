@@ -14,7 +14,7 @@ async function createPromiseApi(nodeAddress) {
 }
 
 async function main() {
-    const nodeAddress = 'wss://a1.calamari.systems';
+    const nodeAddress = 'ws://127.0.0.1:9801';
     const api = await createPromiseApi(nodeAddress);
     const aliceKey = keyring.addFromMnemonic("bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice");
     const code = fs.readFileSync('manta.wasm').toString('hex');
