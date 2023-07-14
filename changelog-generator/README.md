@@ -65,7 +65,6 @@ L-security = "Security"
 [suffix_labels]
 A-manta = "MA"
 A-calamari = "CA"
-A-dolphin = "DO"
 
 [prefix_labels]
 
