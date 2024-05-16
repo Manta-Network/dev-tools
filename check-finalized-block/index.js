@@ -12,7 +12,6 @@ function delay(ms) {
 }
 
 async function main() {
-  
   let paraAddress = "ws://127.0.0.1:9944";
   const args = require('minimist')(process.argv.slice(2))
   if (args.hasOwnProperty('para_address')) {
@@ -26,39 +25,34 @@ async function main() {
     console.log("Using passed parameter relay_address: " + relayAddress);
   }
 
-  let targetBlockNum; 
-  if (args.hasOwnProperty('target_block')) {
-    targetBlockNum = args['target_block'];
-    console.log("Using passed parameter target_block: " + targetBlockNum);
-  }
-  
-  if(targetBlockNum) {
-    const paraApi = await createPromiseApi(paraAddress);
-    const relayApi = await createPromiseApi(relayAddress);
-    let time = 20 * 60;
-
-    while (time > 0) {
-      const paraHeader = await paraApi.rpc.chain.getHeader();
-      const paraBlockNum = paraHeader.number.toNumber();
-
-      const relayHeader = await relayApi.rpc.chain.getHeader();
-      const relayBlockNum = relayHeader.number.toNumber();
-
-      if(paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
-        console.log("Successfully finalized para block number " + paraBlockNum);
-        console.log("Successfully finalized relay block number " + relayBlockNum);
-        process.exit(0);
-      }
-      time-=5;
-      await delay(1000 * 5)
-    }
-   
-    
-    console.log("Failed to finalize the target block number " + targetBlockNum);
+  if (!args.hasOwnProperty('target_block') || (typeof args['target_block'] !== 'number') || !Number.isInteger(args['target_block'])) {
+    console.log("target_block parameter not provided or not an integer!");
     process.exit(1);
   }
+  let targetBlockNum = args['target_block'];
+  console.log("Using passed parameter target_block: " + targetBlockNum);
 
-  console.log("target_block was not provided!");
+  const paraApi = await createPromiseApi(paraAddress);
+  const relayApi = await createPromiseApi(relayAddress);
+  let timeout = 20 * 60;
+  let time = timeout;
+
+  while (time > 0) {
+    const paraHeader = await paraApi.rpc.chain.getHeader();
+    const paraBlockNum = paraHeader.number.toNumber();
+    const relayHeader = await relayApi.rpc.chain.getHeader();
+    const relayBlockNum = relayHeader.number.toNumber();
+    console.log("blocks at " + (timeout - time) + "s: [relay: " + relayBlockNum + ", para: " + paraBlockNum + "]");
+
+    if (paraBlockNum >= targetBlockNum && relayBlockNum >= targetBlockNum) {
+      console.log("Successfully finalized para block number " + paraBlockNum);
+      console.log("Successfully finalized relay block number " + relayBlockNum);
+      process.exit(0);
+    }
+    time -= 5;
+    await delay(1000 * 5)
+  }
+  console.error("Failed to finalize the target block number " + targetBlockNum);
   process.exit(1);
 }
 
